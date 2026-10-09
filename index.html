@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1120" />
   <title>Respirazione guidata</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Respirazione" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <style>
     @property --pc {
       syntax: '<color>';
@@ -135,6 +141,7 @@
     .brand p { margin: 5px 0 0; color: var(--muted); font-size: .95rem; }
 
     .icon-row { display: flex; gap: 8px; }
+    [hidden] { display: none !important; }
 
     .icon-btn {
       width: 44px;
@@ -837,6 +844,7 @@
         </div>
       </div>
       <div class="icon-row">
+        <button class="icon-btn" id="installAppBtn" type="button" hidden aria-label="Installa applicazione" title="Installa applicazione">⬇</button>
         <button class="icon-btn" id="fullscreenBtn" type="button" aria-label="Schermo intero" title="Schermo intero">⛶</button>
         <button class="icon-btn" id="themeBtn" type="button" aria-label="Cambia tema" title="Tema chiaro o scuro">◐</button>
       </div>
@@ -2285,6 +2293,39 @@
       applyTheme();
       initAudioElements();
       renderAll();
+    })();
+  </script>
+
+  <script>
+    // Installazione come app e disponibilità offline (GitHub Pages HTTPS).
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .catch(error => console.warn('Cache offline non disponibile:', error));
+      });
+    }
+    (() => {
+      const installButton = document.getElementById('installAppBtn');
+      let installPrompt = null;
+      window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        installPrompt = event;
+        installButton.hidden = false;
+      });
+      installButton.addEventListener('click', async () => {
+        if (!installPrompt) return;
+        const prompt = installPrompt;
+        installPrompt = null;
+        installButton.hidden = true;
+        try {
+          await prompt.prompt();
+          await prompt.userChoice;
+        } catch (error) { console.warn('Installazione non disponibile:', error); }
+      });
+      window.addEventListener('appinstalled', () => {
+        installPrompt = null;
+        installButton.hidden = true;
+      });
     })();
   </script>
 </body>
