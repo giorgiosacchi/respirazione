@@ -141,7 +141,6 @@
     .brand p { margin: 5px 0 0; color: var(--muted); font-size: .95rem; }
 
     .icon-row { display: flex; gap: 8px; }
-    [hidden] { display: none !important; }
 
     .icon-btn {
       width: 44px;
@@ -817,6 +816,84 @@
       .total-status { text-align: center; }
     }
 
+
+    /* Pannelli richiudibili, disposti sotto al cronometro */
+    .layout:not(.settings-open) { grid-template-columns: minmax(0, 1fr); }
+    .layout:not(.settings-open) .main-card { max-width: 100%; }
+    .controls { grid-template-columns: 1fr 1.3fr; }
+    .panel-launchers {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px; margin-top: 13px;
+    }
+    .panel-launcher {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 6px; min-width: 0; min-height: 51px;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 15px; color: var(--text); cursor: pointer;
+      padding: 10px 7px; font-size: .86rem; font-weight: 780;
+      line-height: 1.2; text-align: center; transition: background .2s, border-color .2s;
+    }
+    .panel-launcher:hover, .panel-launcher[aria-expanded="true"] {
+      background: var(--accent-soft); border-color: var(--accent);
+    }
+    .panel-launcher .launch-icon { font-size: 1.15rem; }
+    .panel-launcher:focus-visible, .preset-option:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .panel-launcher[aria-expanded="true"] .launch-arrow { transform: rotate(180deg); }
+    .launch-arrow { display: inline-block; transition: transform .2s; color: var(--accent); }
+    .active-rhythm {
+      margin: 12px 0 0; padding: 8px 11px; text-align: center;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 11px; color: var(--muted); font-size: .84rem;
+    }
+    .active-rhythm strong { color: var(--text); }
+    .settings-card { align-self: start; }
+    .panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .record-head-actions { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+    .presets-card { padding: clamp(18px, 3vw, 28px); margin-top: 18px; }
+    .presets-card h2 { font-size: 1.3rem; margin: 0 0 6px; letter-spacing: -.02em; }
+    .presets-card .panel-subtitle { color: var(--muted); margin: 0; line-height: 1.5; }
+    .preset-group { margin-top: 24px; }
+    .preset-group h3 { font-size: 1.05rem; margin: 0 0 4px; }
+    .preset-group .group-note { color: var(--muted); margin: 0 0 11px; font-size: .84rem; }
+    .preset-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .preset-option {
+      display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0;
+      padding: 14px; border: 1px solid var(--border); border-radius: 17px;
+      color: var(--text); background: var(--panel-2); cursor: pointer;
+      text-align: left; font: inherit; transition: background .2s, border-color .2s, transform .12s;
+    }
+    .preset-option:hover { border-color: var(--accent); }
+    .preset-option:active { transform: scale(.99); }
+    .preset-option.selected { border: 2px solid var(--accent); padding: 13px; background: var(--accent-soft); }
+    .preset-option-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .preset-time { font-size: 1.09rem; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+    .preset-rpm { color: var(--accent); font-size: .81rem; font-weight: 800; }
+    .preset-desc { color: var(--muted); font-size: .87rem; line-height: 1.4; }
+    .preset-option.selected .preset-desc { color: var(--text); }
+    .preset-choice { font-size: .77rem; color: var(--success); font-weight: 800; min-height: 1em; }
+    .preset-caution { margin: 19px 0 0; font-size: .84rem; line-height: 1.5; color: var(--muted); }
+    .favorite-group {
+      border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--border));
+      border-radius: 18px; background: var(--accent-soft);
+      padding: 16px; margin-top: 18px;
+    }
+    .favorite-group h3 { font-size: 1.15rem; }
+    .favorite-group .preset-option { background: var(--panel); }
+    .favorite-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .favorite-actions .mini-btn { flex: 1 1 190px; }
+
+    @media (max-width: 820px) { .layout.settings-open { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .preset-list { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      .controls { grid-template-columns: 1fr 1.3fr; }
+      .controls .btn-primary { grid-column: auto; grid-row: auto; }
+      .panel-launchers { gap: 6px; }
+      .panel-launcher { padding: 9px 5px; font-size: .75rem; }
+      .panel-launcher .launch-icon { font-size: 1rem; }
+      .panel-launcher .launch-arrow { display: none; }
+    }
+    [hidden] { display: none !important; }
+
     .awake-video {
       position: fixed;
       right: 1px;
@@ -850,7 +927,7 @@
       </div>
     </header>
 
-    <section class="layout">
+    <section class="layout" id="mainLayout">
       <div class="card main-card">
         <div class="mode-switch" role="group" aria-label="Modalità di respirazione">
           <button id="mode4Btn" class="active" type="button">4 tempi</button>
@@ -889,8 +966,13 @@
         <div class="controls">
           <button class="btn btn-secondary" id="resetBtn" type="button">Azzera</button>
           <button class="btn btn-primary" id="startBtn" type="button">Avvia</button>
-          <button class="btn btn-secondary" id="settingsBtn" type="button">Tempi</button>
         </div>
+        <div class="panel-launchers" role="group" aria-label="Apri o chiudi i pannelli dell'esercizio">
+          <button class="panel-launcher" id="settingsBtn" type="button" aria-controls="settingsPanel" aria-expanded="false"><span class="launch-icon" aria-hidden="true">⚙</span> Tempi e durata <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+          <button class="panel-launcher" id="recordPanelBtn" type="button" aria-controls="recordCard" aria-expanded="false"><span class="launch-icon" aria-hidden="true">◉</span> Il mio ritmo <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+          <button class="panel-launcher" id="presetsPanelBtn" type="button" aria-controls="presetsPanel" aria-expanded="false"><span class="launch-icon" aria-hidden="true">☷</span> Ritmi guidati <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+        </div>
+        <p class="active-rhythm" id="activeRhythm" aria-live="polite">Ritmo attuale: <strong>4–4–4–4</strong></p>
 
         <div class="status-row">
           <div class="cycle-counter" aria-live="polite" aria-label="Numero di cicli completati">
@@ -905,7 +987,7 @@
         </div>
       </div>
 
-      <aside class="card settings-card" id="settingsPanel">
+      <aside class="card settings-card hidden" id="settingsPanel" aria-label="Tempi e durata">
         <div class="settings-head">
           <h2>Definizione dei tempi</h2>
           <button class="icon-btn" id="closeSettingsBtn" type="button" aria-label="Nascondi impostazioni" title="Nascondi">×</button>
@@ -986,13 +1068,16 @@
       </aside>
     </section>
 
-    <section class="card record-card" id="recordCard" aria-labelledby="recTitle">
+    <section class="card record-card hidden" id="recordCard" aria-labelledby="recTitle">
       <div class="record-head">
         <div>
           <h2 id="recTitle">Trova il tuo ritmo ideale</h2>
           <p>Respira come ti viene naturale e tocca lo schermo a ogni cambio di fase: il programma misura da solo i quattro tempi.</p>
         </div>
-        <button class="btn btn-primary" id="recStartBtn" type="button">Registra il mio ritmo</button>
+        <div class="record-head-actions">
+          <button class="btn btn-primary" id="recStartBtn" type="button">Registra il mio ritmo</button>
+          <button class="icon-btn" id="closeRecordBtn" type="button" title="Chiudi il pannello" aria-label="Chiudi Trova il tuo ritmo ideale">×</button>
+        </div>
       </div>
       <ol class="record-steps">
         <li style="--chip: var(--c-inhale)"><b>Tocca</b> e inizia a inspirare</li>
@@ -1006,11 +1091,39 @@
         <h3>Il tuo ritmo</h3>
         <div class="record-values" id="recValues"></div>
         <div class="record-actions">
-          <button class="btn btn-primary" id="recApplyBtn" type="button">Usa questi tempi</button>
+          <button class="btn btn-primary" id="recApplyBtn" type="button">Usa e salva come preferito</button>
           <button class="btn btn-secondary" id="recRetryBtn" type="button">Registra di nuovo</button>
         </div>
-        <p class="record-note">I tempi vengono arrotondati al mezzo secondo e applicati alla modalità a 4 tempi. Puoi poi ritoccarli a mano dalle impostazioni.</p>
+        <p class="record-note">I tempi vengono arrotondati al mezzo secondo e applicati alla modalità a 4 tempi. Il ritmo viene anche memorizzato come «Il mio preferito» nei Ritmi guidati, per le prossime sessioni. Puoi sostituirlo con una nuova registrazione o con i tempi impostati a mano.</p>
       </div>
+    </section>
+
+    <section class="card presets-card hidden" id="presetsPanel" aria-labelledby="presetsTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="presetsTitle">Scegli un ritmo respiratorio</h2>
+          <p class="panel-subtitle">Tocca uno schema per applicarne immediatamente i tempi all'esercizio. I numeri indicano i secondi di inspirazione, eventuale pausa a polmoni pieni, espirazione e pausa finale.</p>
+        </div>
+        <button class="icon-btn" id="closePresetsBtn" type="button" aria-label="Chiudi ritmi guidati" title="Chiudi">×</button>
+      </div>
+      <section class="preset-group favorite-group" id="favoriteSection" aria-labelledby="favoriteTitle">
+        <h3 id="favoriteTitle">★ Il mio preferito</h3>
+        <p class="group-note" id="favoriteHint">Non hai ancora salvato un ritmo personale. Registralo in «Il mio ritmo», oppure usa il pulsante qui sotto per memorizzare i tempi attuali.</p>
+        <div class="preset-list">
+          <button type="button" id="favoriteOption" class="preset-option" aria-pressed="false" hidden>
+            <span class="preset-option-top"><span class="preset-time" id="favoritePattern"></span><span class="preset-rpm" id="favoriteRate"></span></span>
+            <span class="preset-desc">Il tuo ritmo personale memorizzato su questo dispositivo</span>
+            <span class="preset-choice" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="favorite-actions">
+          <button class="mini-btn" type="button" id="saveFavoriteCurrentBtn">★ Salva il ritmo attuale come preferito</button>
+          <button class="mini-btn" type="button" id="deleteFavoriteBtn" hidden>Elimina preferito</button>
+        </div>
+      </section>
+      <div id="presetGroups" aria-label="Schemi respiratori disponibili"></div>
+      <p class="preset-caution">Il preferito viene memorizzato soltanto su questo browser e dispositivo. La prova con il file HTML scaricato e la futura versione online possono avere memorie separate. Non usare la navigazione in incognito se vuoi conservarlo.</p>
+      <p class="preset-caution">Indicazioni orientative di benessere, non prescrizioni mediche. Non forzare il ritmo e interrompi in caso di affanno, capogiri o disagio; i ritmi con pause prolungate non sono adatti a tutti.</p>
     </section>
   </main>
 
@@ -1118,7 +1231,8 @@
         wakeFailureReason: '',
         activeSnapshot: null,
         baseTheme: 'dark',
-        bgColor: null
+        bgColor: null,
+        favorite: null
       };
 
       const el = {
@@ -1197,6 +1311,21 @@
       }
 
       /* ---------- Salvataggio / caricamento ---------- */
+      function normalizedFavorite(value) {
+        if (!value || (value.mode !== 2 && value.mode !== 4) || !value.durations) return null;
+        const durations = {};
+        for (const key of Object.keys(PHASES)) {
+          if (value.durations[key] === null || value.durations[key] === undefined || value.durations[key] === '') return null;
+          const n = Number(value.durations[key]);
+          if (!Number.isFinite(n) || n < 0 || n > 30) return null;
+          durations[key] = clamp(roundHalf(n), 0, 30);
+        }
+        if (!runKeysFor(durations, value.mode).length) return null;
+        return { mode: value.mode, durations };
+      }
+      function favoriteFromCurrent() {
+        return normalizedFavorite({ mode: state.mode, durations: { ...state.durations } });
+      }
       function saveSettings() {
         try {
           localStorage.setItem('breathGuideSettings', JSON.stringify({
@@ -1207,11 +1336,14 @@
             sessionMinutes: state.sessionMinutes,
             settingsVersion: 5,
             theme: state.baseTheme,
-            bgColor: state.bgColor
+            bgColor: state.bgColor,
+            favorite: state.favorite
           }));
+          return true;
         } catch (_) {
           // Alcuni visualizzatori di file locali bloccano localStorage.
           // Il programma continua comunque a funzionare per la sessione corrente.
+          return false;
         }
       }
 
@@ -1236,6 +1368,7 @@
           if (Number.isFinite(saved.sessionMinutes)) state.sessionMinutes = clamp(Math.round(saved.sessionMinutes), 0, 180);
           state.baseTheme = saved.theme === 'light' ? 'light' : 'dark';
           if (typeof saved.bgColor === 'string' && /^#[0-9a-f]{6}$/i.test(saved.bgColor)) state.bgColor = saved.bgColor.toLowerCase();
+          state.favorite = normalizedFavorite(saved.favorite);
         } catch (_) {}
       }
 
@@ -1358,6 +1491,7 @@
         if (!state.running) renderGraph();
         renderStatus();
         if (!state.running) setReadyReadout();
+        updatePresetSelection();
         saveSettings();
       }
 
@@ -1577,6 +1711,7 @@
         renderSessionSettings();
         renderStatus();
         if (!state.running) setReadyReadout();
+        updatePresetSelection();
       }
 
       /* ---------- Audio: sintesi di campane morbide ---------- */
@@ -2023,12 +2158,181 @@
         if (showMessage) showToast('Sessione azzerata.');
       }
 
-      function toggleSettings() {
-        el.settingsPanel.classList.toggle('hidden');
-        if (!el.settingsPanel.classList.contains('hidden')) {
-          el.settingsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      /* ---------- Pannelli e ritmi predefiniti ---------- */
+      const presetData = [{"name":"Due tempi","note":"Inspirazione – espirazione","entries":[["2–2","15","Ritmo rapido controllato, non particolarmente rilassante"],["2–4","10","Controllo della dispnea, espirazione a labbra socchiuse"],["3–3","10","Iniziare a regolarizzare il respiro"],["3–4","8,6","Rilassamento leggero"],["3–5","7,5","Gestione dello stress"],["3–6","6,7","Rilassamento con espirazione prolungata"],["4–4","7,5","Attenzione, meditazione, ritmo regolare"],["4–5","6,7","Rilassamento progressivo"],["4–6","6","Stress, ansia lieve, regolazione del respiro"],["4–7","5,5","Rilassamento profondo, se confortevole"],["4–8","5","Preparazione al sonno, se non provoca affanno"],["5–5","6","Respirazione lenta o coerente, variabilità cardiaca"],["5–6","5,5","Rilassamento e concentrazione calma"],["5–7","5","Meditazione, rallentamento respiratorio"],["6–6","5","Meditazione lenta, per chi è già abituato"],["6–8","4,3","Respirazione molto lenta, non adatta a tutti"]]},{"name":"Quattro tempi","note":"Inspirazione – pausa – espirazione – pausa","entries":[["2–1–3–1","8,6","Familiarizzazione con le pause"],["2–2–2–2","7,5","Coordinazione respiratoria"],["3–1–4–1","6,7","Rilassamento leggero"],["3–2–4–1","6","Controllo e consapevolezza del respiro"],["3–3–3–3","5","Respirazione quadrata, gestione dello stress"],["4–1–6–1","5","Rilassamento con espirazione prolungata"],["4–2–4–2","5","Concentrazione e controllo respiratorio"],["4–2–6–2","4,3","Meditazione e rilassamento lento"],["4–4–4–4","3,75","Box breathing, calma e concentrazione"],["4–4–6–2","3,75","Variante meditativa avanzata"],["5–2–6–2","4","Rilassamento molto lento"],["5–5–5–5","3","Variante quadrata impegnativa"],["6–3–6–3","3,3","Controllo respiratorio avanzato"],["3–0–3–4","6","Esempio di schema personalizzato, senza pausa dopo l’inspirazione"]]},{"name":"Tre tempi","note":"Inspirazione – trattenimento – espirazione (pausa finale a 0 secondi)","entries":[["4–7–8","3,2","Rilassamento prima del sonno"],["4–2–6","5","Regolazione del respiro"],["3–2–5","6","Rilassamento moderato"],["5–2–7","4,3","Meditazione lenta"]]}];
+      const panelSpec = [
+        { button: 'settingsBtn', panel: 'settingsPanel' },
+        { button: 'recordPanelBtn', panel: 'recordCard' },
+        { button: 'presetsPanelBtn', panel: 'presetsPanel' }
+      ];
+      function syncPanels() {
+        panelSpec.forEach(spec => {
+          const open = !document.getElementById(spec.panel).classList.contains('hidden');
+          document.getElementById(spec.button).setAttribute('aria-expanded', String(open));
+        });
+        document.getElementById('mainLayout').classList.toggle('settings-open',
+          !document.getElementById('settingsPanel').classList.contains('hidden'));
+      }
+      function setPanelOpen(panelId, open) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+        panel.classList.toggle('hidden', !open);
+        syncPanels();
+        if (open) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function togglePanel(panelId) {
+        const panel = document.getElementById(panelId);
+        setPanelOpen(panelId, panel.classList.contains('hidden'));
+      }
+      function presetValues(pattern) {
+        const v = pattern.split('–').map(Number);
+        if (v.length === 2) return { mode: 2, durations: { inhale:v[0], holdIn:0, exhale:v[1], holdOut:0 }};
+        if (v.length === 3) return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:0 }};
+        return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:v[3] }};
+      }
+      function currentPattern() {
+        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
+        return keys.map(k => fmt(state.durations[k])).join('–');
+      }
+      function currentMatchesFavorite() {
+        const favorite = state.favorite;
+        if (!favorite || favorite.mode !== state.mode) return false;
+        return MODE_PHASES[state.mode].every(k => favorite.durations[k] === state.durations[k]);
+      }
+      function refreshFavoritePanel() {
+        const favorite = state.favorite;
+        const button = document.getElementById('favoriteOption');
+        if (!button) return;
+        const removeButton = document.getElementById('deleteFavoriteBtn');
+        const hint = document.getElementById('favoriteHint');
+        button.hidden = !favorite;
+        removeButton.hidden = !favorite;
+        if (!favorite) {
+          hint.textContent = 'Non hai ancora salvato un ritmo personale. Registralo in «Il mio ritmo», oppure usa il pulsante qui sotto per memorizzare i tempi attuali.';
+          return;
+        }
+        const keys = MODE_PHASES[favorite.mode];
+        const values = keys.map(k => favorite.durations[k]);
+        const seconds = values.reduce((sum, n) => sum + n, 0);
+        const pattern = values.map(fmt).join('–');
+        const rpm = (60 / seconds).toLocaleString('it-IT', { maximumFractionDigits: 2 });
+        document.getElementById('favoritePattern').textContent = pattern;
+        document.getElementById('favoriteRate').textContent = rpm + ' respiri/min';
+        button.setAttribute('aria-label', 'Usa il mio preferito: ' + pattern);
+        hint.textContent = 'Questo ritmo resta salvato tra una sessione e l’altra sullo stesso browser. Toccalo per usarlo, anche dopo aver provato altri ritmi.';
+      }
+      function saveCurrentAsFavorite() {
+        const favorite = favoriteFromCurrent();
+        if (!favorite) { showToast('Imposta almeno una fase diversa da zero.'); return; }
+        state.favorite = favorite;
+        refreshFavoritePanel();
+        updatePresetSelection();
+        const stored = saveSettings();
+        showToast(stored ? 'Ritmo personale memorizzato come preferito.' : 'Non è stato possibile memorizzare il preferito su questo browser.');
+      }
+      function applyFavorite() {
+        if (!state.favorite) return;
+        const favorite = normalizedFavorite(state.favorite);
+        if (!favorite) return;
+        resetSession(false);
+        state.mode = favorite.mode;
+        Object.assign(state.durations, favorite.durations);
+        state.selectedPhase = 'inhale';
+        renderAll();
+        saveSettings();
+        showToast('Il mio preferito impostato: premi Avvia.');
+        setPanelOpen('presetsPanel', false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      function deleteFavorite() {
+        state.favorite = null;
+        refreshFavoritePanel();
+        updatePresetSelection();
+        saveSettings();
+        showToast('Preferito eliminato. Il ritmo attuale non cambia.');
+      }
+      function updatePresetSelection() {
+        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
+        const seconds = keys.reduce((a,k) => a + state.durations[k], 0);
+        const rpm = seconds > 0 ? (60 / seconds).toLocaleString('it-IT', {maximumFractionDigits:2}) : '—';
+        document.getElementById('activeRhythm').innerHTML = 'Ritmo attuale: <strong></strong> · ' + rpm + ' respiri/min';
+        document.querySelector('#activeRhythm strong').textContent = currentPattern();
+        document.querySelectorAll('#presetGroups .preset-option').forEach(button => {
+          const vals = presetValues(button.dataset.pattern);
+          const match = vals.mode === state.mode &&
+            (state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'])
+              .every(k => vals.durations[k] === state.durations[k]);
+          button.classList.toggle('selected', match);
+          button.setAttribute('aria-pressed', String(match));
+          button.querySelector('.preset-choice').textContent = match ? '✓ Schema attivo' : '';
+        });
+        const favoriteButton = document.getElementById('favoriteOption');
+        if (favoriteButton) {
+          const match = currentMatchesFavorite();
+          favoriteButton.classList.toggle('selected', match);
+          favoriteButton.setAttribute('aria-pressed', String(match));
+          favoriteButton.querySelector('.preset-choice').textContent = match ? '✓ Il tuo preferito è attivo' : '';
         }
       }
+      function applyPreset(pattern) {
+        const values = presetValues(pattern);
+        resetSession(false);
+        state.mode = values.mode;
+        Object.assign(state.durations, values.durations);
+        state.selectedPhase = 'inhale';
+        renderAll();
+        saveSettings();
+        showToast('Ritmo ' + pattern + ' impostato: premi Avvia.');
+        setPanelOpen('presetsPanel', false);
+        window.scrollTo({ top:0, behavior:'smooth' });
+      }
+      function initPresets() {
+        const container = document.getElementById('presetGroups');
+        presetData.forEach((group, groupIndex) => {
+          const section = document.createElement('section');
+          section.className = 'preset-group';
+          const title = document.createElement('h3');
+          title.textContent = group.name;
+          title.id = 'preset-group-' + groupIndex;
+          section.setAttribute('aria-labelledby', title.id);
+          section.appendChild(title);
+          const note = document.createElement('p');
+          note.className = 'group-note';
+          note.textContent = group.note;
+          section.appendChild(note);
+          const list = document.createElement('div');
+          list.className = 'preset-list';
+          group.entries.forEach(([pattern,rpm,indication]) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'preset-option';
+            button.dataset.pattern = pattern;
+            button.setAttribute('aria-pressed','false');
+            button.setAttribute('aria-label','Seleziona ' + pattern + ': ' + indication);
+            const top = document.createElement('span');
+            top.className = 'preset-option-top';
+            const time = document.createElement('span');
+            time.className = 'preset-time'; time.textContent = pattern;
+            const rate = document.createElement('span');
+            rate.className = 'preset-rpm'; rate.textContent = rpm + ' respiri/min';
+            top.append(time, rate);
+            const desc = document.createElement('span');
+            desc.className = 'preset-desc'; desc.textContent = indication;
+            const chosen = document.createElement('span');
+            chosen.className = 'preset-choice'; chosen.setAttribute('aria-hidden','true');
+            button.append(top,desc,chosen);
+            button.addEventListener('click', () => applyPreset(pattern));
+            list.appendChild(button);
+          });
+          section.appendChild(list);
+          container.appendChild(section);
+        });
+        refreshFavoritePanel();
+        updatePresetSelection();
+      }
+
+      function toggleSettings() { togglePanel('settingsPanel'); }
 
       function toggleTheme() {
         const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -2055,7 +2359,14 @@
       el.startBtn.addEventListener('click', startOrPause);
       el.resetBtn.addEventListener('click', () => resetSession(true));
       el.settingsBtn.addEventListener('click', toggleSettings);
-      el.closeSettingsBtn.addEventListener('click', () => el.settingsPanel.classList.add('hidden'));
+      el.closeSettingsBtn.addEventListener('click', () => setPanelOpen('settingsPanel',false));
+      document.getElementById('recordPanelBtn').addEventListener('click', () => togglePanel('recordCard'));
+      document.getElementById('closeRecordBtn').addEventListener('click', () => setPanelOpen('recordCard',false));
+      document.getElementById('presetsPanelBtn').addEventListener('click', () => togglePanel('presetsPanel'));
+      document.getElementById('closePresetsBtn').addEventListener('click', () => setPanelOpen('presetsPanel',false));
+      document.getElementById('favoriteOption').addEventListener('click', applyFavorite);
+      document.getElementById('saveFavoriteCurrentBtn').addEventListener('click', saveCurrentAsFavorite);
+      document.getElementById('deleteFavoriteBtn').addEventListener('click', deleteFavorite);
       el.minusBtn.addEventListener('click', () => updateDuration(state.durations[state.selectedPhase] - .5));
       el.plusBtn.addEventListener('click', () => updateDuration(state.durations[state.selectedPhase] + .5));
       el.timeInput.addEventListener('change', e => updateDuration(e.target.value));
@@ -2120,7 +2431,7 @@
           e.preventDefault();
           startOrPause();
         }
-        if (e.key === 'Escape' && !document.fullscreenElement) el.settingsPanel.classList.add('hidden');
+        if (e.key === 'Escape' && !document.fullscreenElement) { panelSpec.forEach(x => setPanelOpen(x.panel,false)); }
       });
 
 
@@ -2270,10 +2581,12 @@
         else if (state.running) resetSession(false);
         REC_KEYS.forEach(key => { state.durations[key] = rec.values[key]; });
         state.selectedPhase = 'inhale';
+        state.favorite = favoriteFromCurrent();
+        refreshFavoritePanel();
         renderAll();
-        saveSettings();
+        const stored = saveSettings();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        showToast('Ritmo salvato: premi Avvia per provarlo.');
+        showToast(stored ? 'Il mio preferito salvato: premi Avvia per provarlo.' : 'Ritmo applicato, ma questo browser non consente di salvarlo.');
       }
 
       rEl.startBtn.addEventListener('click', recOpen);
@@ -2289,6 +2602,8 @@
       }, true);
 
       loadSettings();
+      initPresets();
+      syncPanels();
       initBgSwatches();
       applyTheme();
       initAudioElements();
@@ -2297,11 +2612,10 @@
   </script>
 
   <script>
-    // Installazione come app e disponibilità offline (GitHub Pages HTTPS).
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { scope: './' })
-          .catch(error => console.warn('Cache offline non disponibile:', error));
+          .catch(error => console.warn('Cache offline non disponibile:',error));
       });
     }
     (() => {
@@ -2317,10 +2631,8 @@
         const prompt = installPrompt;
         installPrompt = null;
         installButton.hidden = true;
-        try {
-          await prompt.prompt();
-          await prompt.userChoice;
-        } catch (error) { console.warn('Installazione non disponibile:', error); }
+        try { await prompt.prompt(); await prompt.userChoice; }
+        catch (error) { console.warn('Installazione non disponibile:',error); }
       });
       window.addEventListener('appinstalled', () => {
         installPrompt = null;
