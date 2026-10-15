@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1120" />
+  <title>Respirazione guidata</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Respirazione" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    @property --pc {
+      syntax: '<color>';
+      inherits: true;
+      initial-value: #1e88e5;
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #f3f6fc;
+      --text: #172033;
+      --muted: #5f6b80;
+      --accent: #246bfd;
+      --accent-soft: color-mix(in srgb, var(--accent) 14%, var(--bg));
+      --panel: color-mix(in srgb, var(--bg) 30%, #fff);
+      --panel-2: color-mix(in srgb, var(--bg) 84%, #27406b);
+      --border: color-mix(in srgb, var(--bg) 74%, #27406b);
+      --ring-base: color-mix(in srgb, var(--bg) 80%, #27406b);
+      --success: #168f67;
+      --warning: #c57a09;
+      --danger: #c63e45;
+      --shadow: 0 22px 60px rgba(23, 32, 51, .13);
+      --marker: #ffffff;
+      --c-inhale: #1e88e5;
+      --c-holdIn: #d98a00;
+      --c-exhale: #17a673;
+      --c-holdOut: #8b5cf6;
+      --orb-hi: color-mix(in srgb, var(--pc) 30%, #fff);
+      --pc: var(--c-inhale);
+      transition: --pc .8s ease;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --text: #f3f6fb;
+      --muted: #a9b4c8;
+      --accent: #7aa3ff;
+      --accent-soft: color-mix(in srgb, var(--accent) 22%, var(--bg));
+      --panel: color-mix(in srgb, var(--bg) 87%, #fff);
+      --panel-2: color-mix(in srgb, var(--bg) 79%, #fff);
+      --border: color-mix(in srgb, var(--bg) 69%, #fff);
+      --ring-base: color-mix(in srgb, var(--bg) 78%, #fff);
+      --success: #58d0a7;
+      --warning: #f2b85b;
+      --danger: #ff8389;
+      --shadow: 0 22px 60px rgba(0, 0, 0, .4);
+      --marker: #0b1120;
+      --c-inhale: #6cb2ff;
+      --c-holdIn: #ffc65c;
+      --c-exhale: #4fdcae;
+      --c-holdOut: #b794ff;
+      --orb-hi: color-mix(in srgb, var(--pc) 45%, var(--bg));
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color .4s ease, color .4s ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(60rem 38rem at 10% -10%, color-mix(in srgb, var(--pc) 20%, transparent), transparent 70%),
+        radial-gradient(46rem 34rem at 105% 108%, color-mix(in srgb, var(--c-holdOut) 15%, transparent), transparent 70%);
+    }
+
+    button, input { font: inherit; }
+    button { touch-action: manipulation; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background:
+        radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pc) 30%, #fff), var(--pc) 70%);
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--pc) 18%, transparent), 0 8px 26px color-mix(in srgb, var(--pc) 45%, transparent);
+      animation: logoBreath 6s ease-in-out infinite;
+    }
+
+    @keyframes logoBreath {
+      0%, 100% { transform: scale(.88); }
+      50% { transform: scale(1); }
+    }
+
+    .brand h1 {
+      font-size: clamp(1.45rem, 2.7vw, 2.15rem);
+      line-height: 1.1;
+      margin: 0;
+      letter-spacing: -.035em;
+      background: linear-gradient(90deg, var(--text) 30%, var(--pc));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .brand p { margin: 5px 0 0; color: var(--muted); font-size: .95rem; }
+
+    .icon-row { display: flex; gap: 8px; }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 85%, transparent);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      transition: border-color .2s, transform .15s;
+    }
+    .icon-btn:hover { border-color: var(--accent); }
+    .icon-btn:active { transform: scale(.94); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(310px, .75fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel) 84%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .main-card { padding: clamp(18px, 3vw, 30px); }
+    .settings-card { padding: 20px; position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      padding: 5px;
+      background: var(--panel-2);
+      border-radius: 17px;
+      margin-bottom: 14px;
+    }
+
+    .mode-switch button {
+      border: 0;
+      border-radius: 13px;
+      padding: 11px 12px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-weight: 750;
+      transition: .2s ease;
+    }
+
+    .mode-switch button.active {
+      background: var(--panel);
+      color: var(--accent);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+    }
+
+    /* ---------- Stage: orb + anello progressivo ---------- */
+    .stage {
+      position: relative;
+      width: min(100%, 470px);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      container-type: inline-size;
+    }
+
+    #breathRing { width: 100%; height: 100%; display: block; overflow: visible; }
+
+    .dots {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: .1 11.2;
+      transform-box: view-box;
+      transform-origin: 240px 240px;
+      animation: spin 120s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ring-base {
+      fill: none;
+      stroke: var(--ring-base);
+      stroke-width: 14;
+      stroke-linecap: round;
+    }
+
+    .ring-active {
+      fill: none;
+      stroke: var(--seg);
+      stroke-width: 14;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 7px color-mix(in srgb, var(--seg) 75%, transparent));
+    }
+
+    .orb-stop-a { stop-color: var(--orb-hi); stop-opacity: .72; }
+    .orb-stop-b { stop-color: var(--pc); stop-opacity: .9; }
+    .aura-stop-a { stop-color: var(--pc); stop-opacity: .38; }
+    .aura-stop-b { stop-color: var(--pc); stop-opacity: 0; }
+
+    .orb-core { stroke: var(--pc); stroke-opacity: .7; stroke-width: 2.5; }
+    .orb-echo { fill: none; stroke: var(--pc); stroke-opacity: .28; stroke-width: 2; }
+
+    .marker {
+      fill: var(--marker);
+      stroke: var(--pc);
+      stroke-width: 6;
+      filter: drop-shadow(0 3px 9px rgba(0, 0, 0, .3));
+    }
+
+    .stage-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 24%;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: clamp(.58rem, 2.3cqw, .76rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+    }
+
+    .phase-name {
+      margin: .35em 0 0;
+      font-size: clamp(1.1rem, 6.2cqw, 2rem);
+      line-height: 1.04;
+      letter-spacing: -.03em;
+      text-wrap: balance;
+    }
+
+    .countdown {
+      margin-top: .18em;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(1.4rem, 10.5cqw, 3.1rem);
+      font-weight: 850;
+      letter-spacing: -.03em;
+      color: var(--text);
+    }
+
+    .phase-inhale  { color: var(--c-inhale); }
+    .phase-holdIn  { color: var(--c-holdIn); }
+    .phase-exhale  { color: var(--c-exhale); }
+    .phase-holdOut { color: var(--c-holdOut); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 750;
+      transition: .25s ease;
+    }
+    .chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--chip); }
+    .chip b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .chip.active {
+      border-color: var(--chip);
+      color: var(--text);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--chip) 24%, transparent);
+    }
+
+    /* ---------- Controlli ---------- */
+    .controls {
+      display: grid;
+      grid-template-columns: auto minmax(150px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      min-height: 52px;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .15s ease, box-shadow .2s ease;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--c-holdOut)));
+      color: white;
+      box-shadow: 0 12px 26px color-mix(in srgb, var(--accent) 30%, transparent);
+      font-size: 1.05rem;
+    }
+    html[data-theme="dark"] .btn-primary { color: #081020; }
+
+    .btn-secondary {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 18px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .cycle-counter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-width: 250px;
+      padding: 12px 18px;
+      border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+      border-radius: 20px;
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .cycle-counter-label { font-size: 1rem; line-height: 1.15; font-weight: 850; }
+
+    .cycle-counter-number {
+      min-width: 1.35em;
+      color: var(--accent);
+      font-size: clamp(2.3rem, 6vw, 3.4rem);
+      line-height: .85;
+      font-weight: 950;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.04em;
+    }
+
+    .total-status { font-size: 1rem; font-weight: 750; }
+
+    .session-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      text-align: right;
+    }
+
+    .session-remaining {
+      color: var(--accent);
+      font-size: 1.18rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wake-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 800;
+    }
+    .wake-indicator::before {
+      content: "";
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--muted) 18%, transparent);
+    }
+    .wake-indicator.active { color: var(--success); border-color: color-mix(in srgb, var(--success) 55%, var(--border)); }
+    .wake-indicator.active::before { background: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 20%, transparent); }
+    .wake-indicator.fallback { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 55%, var(--border)); }
+    .wake-indicator.fallback::before { background: var(--warning); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warning) 20%, transparent); }
+    .wake-indicator.failed { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, var(--border)); }
+    .wake-indicator.failed::before { background: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent); }
+
+    /* ---------- Impostazioni ---------- */
+    .settings-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .settings-head h2 { margin: 0; font-size: 1.12rem; }
+
+    .phase-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .phase-tab {
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--chip);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 9px 12px;
+      cursor: pointer;
+      min-height: 58px;
+      font-weight: 750;
+      line-height: 1.15;
+    }
+    .phase-tab small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+    .phase-tab.active {
+      border-color: var(--chip);
+      border-top-color: var(--chip);
+      background: color-mix(in srgb, var(--chip) 16%, var(--panel-2));
+    }
+
+    .time-editor {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .editor-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 13px;
+    }
+    .editor-title strong { font-size: 1rem; }
+    .editor-title span { color: var(--muted); font-size: .85rem; }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 54px 1fr 54px;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .stepper button {
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .stepper input {
+      min-width: 0;
+      height: 54px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--text);
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      outline: none;
+    }
+    .stepper input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .range { width: 100%; margin-top: 14px; accent-color: var(--accent); }
+
+    .quick-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .quick-presets button {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 8px 4px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: .84rem;
+    }
+
+    .session-box, .sound-box, .bg-box {
+      margin-top: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .session-input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .session-input-row input {
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--panel);
+      color: var(--text);
+      text-align: center;
+      font-size: 1.18rem;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      outline: none;
+    }
+    .session-input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .session-input-row span { color: var(--muted); font-weight: 800; }
+
+    .session-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .session-presets button, .test-sounds-btn {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 9px 5px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .session-hint { margin: 9px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.35; }
+
+    .test-sounds-btn {
+      width: 100%;
+      margin-top: 12px;
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      background: var(--accent-soft);
+    }
+
+    .switch-line { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .switch-copy strong { display: block; }
+    .switch-copy span { color: var(--muted); font-size: .83rem; }
+
+    .toggle {
+      width: 54px;
+      height: 30px;
+      background: var(--border);
+      border: 0;
+      border-radius: 999px;
+      padding: 3px;
+      cursor: pointer;
+      transition: .2s ease;
+      flex: 0 0 auto;
+    }
+    .toggle::after {
+      content: "";
+      display: block;
+      width: 24px; height: 24px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 7px rgba(0,0,0,.2);
+      transition: transform .2s ease;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle.on::after { transform: translateX(24px); }
+
+    .volume-row { margin-top: 13px; }
+    .volume-row label { display: flex; justify-content: space-between; color: var(--muted); font-size: .84rem; }
+    .volume-row input { width: 100%; margin-top: 7px; accent-color: var(--accent); }
+
+    /* ---------- Sfondo ---------- */
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .swatch {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--sw);
+      cursor: pointer;
+      padding: 0;
+      transition: transform .15s ease, border-color .2s;
+    }
+    .swatch:hover { transform: scale(1.08); }
+    .swatch.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .bg-custom-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 9px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    .color-pick {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      font-size: .86rem;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    .color-pick input {
+      width: 34px; height: 34px;
+      border: 0; padding: 0;
+      border-radius: 9px;
+      background: none;
+      cursor: pointer;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: .84rem;
+    }
+
+    .apply-note { margin: 14px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
+
+    /* ---------- Registrazione del ritmo ideale ---------- */
+    .record-card { margin-top: 18px; padding: clamp(18px, 3vw, 28px); }
+    .record-head { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    .record-head h2 { margin: 0 0 6px; font-size: 1.3rem; letter-spacing: -.02em; }
+    .record-head p { margin: 0; color: var(--muted); max-width: 62ch; line-height: 1.45; }
+    .record-steps {
+      list-style: none; counter-reset: rs; margin: 18px 0 0; padding: 0;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
+    }
+    .record-steps li {
+      counter-increment: rs; position: relative;
+      padding: 12px 14px 12px 50px; border: 1px solid var(--border); border-radius: 16px;
+      background: var(--panel-2); font-size: .9rem; line-height: 1.35; color: var(--muted);
+    }
+    .record-steps li::before {
+      content: counter(rs); position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+      font-weight: 900; color: #fff; background: var(--chip);
+    }
+    html[data-theme="dark"] .record-steps li::before { color: #081020; }
+    .record-steps li b { color: var(--text); }
+    .record-result { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .record-result h3 { margin: 0 0 12px; font-size: 1.05rem; }
+    .record-values { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+    .rv {
+      border: 1px solid var(--border); border-top: 4px solid var(--chip); border-radius: 16px;
+      padding: 12px; background: var(--panel-2); text-align: center;
+    }
+    .rv small { display: block; color: var(--muted); font-weight: 750; }
+    .rv strong { display: block; margin-top: 4px; font-size: 1.7rem; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+    .rv em { display: block; font-style: normal; color: var(--muted); font-size: .76rem; margin-top: 2px; }
+    .record-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .record-actions .btn { min-height: 48px; }
+    .record-note { margin: 12px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
+    .rec-overlay {
+      position: fixed; inset: 0; z-index: 60;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: color-mix(in srgb, var(--bg) 93%, transparent);
+      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+      touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      --pc: var(--c-inhale);
+    }
+    .rec-close { position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 2; cursor: pointer; }
+    .rec-dots { position: absolute; top: max(26px, calc(env(safe-area-inset-top) + 10px)); left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+    .rec-dots span { width: 44px; height: 8px; border-radius: 99px; background: var(--ring-base); transition: background .3s; }
+    .rec-dots span.done { background: var(--c-dot); }
+    .rec-dots span.active { background: var(--c-dot); animation: recPulse 1.1s ease-in-out infinite; }
+    @keyframes recPulse { 50% { opacity: .35; } }
+    .rec-orb {
+      position: absolute; width: min(70vw, 60vh, 420px); aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pc) 32%, #fff), var(--pc) 72%);
+      opacity: .32; transform: scale(.55);
+      box-shadow: 0 0 80px color-mix(in srgb, var(--pc) 55%, transparent);
+      transition: transform 5s cubic-bezier(.45, 0, .55, 1), background .6s;
+      pointer-events: none;
+    }
+    .rec-orb.grow { transform: scale(1); }
+    .rec-orb.shrink { transform: scale(.55); }
+    .rec-text { position: relative; text-align: center; padding: 0 24px; pointer-events: none; }
+    .rec-phase { margin: 8px 0 0; font-size: clamp(2rem, 9vw, 3.6rem); letter-spacing: -.04em; line-height: 1.05; color: var(--pc); }
+    .rec-timer { margin-top: 10px; font-size: clamp(2.6rem, 14vw, 5.4rem); font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+    .rec-hint { margin: 14px auto 0; max-width: 28ch; color: var(--muted); font-size: 1.05rem; line-height: 1.4; }
+
+    .rec-skip { position: absolute; bottom: max(30px, calc(env(safe-area-inset-bottom) + 16px)); z-index: 2; cursor: pointer; padding: 0 24px; }
+    .rec-skip.hidden { display: none !important; }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translate(-50%, 20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 11px 15px;
+      border-radius: 12px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+      z-index: 20;
+      max-width: calc(100vw - 36px);
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      .settings-card { position: static; max-height: none; overflow: visible; }
+    }
+
+    @media (max-width: 520px) {
+      .app { padding-left: 12px; padding-right: 12px; }
+      .topbar { align-items: flex-start; }
+      .brand p { font-size: .84rem; }
+      .logo { width: 38px; height: 38px; }
+      .main-card, .settings-card { border-radius: 22px; }
+      .main-card { padding: 15px; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls .btn-primary { grid-column: 1 / -1; grid-row: 1; }
+      .status-row { display: grid; grid-template-columns: 1fr; font-size: .82rem; }
+      .cycle-counter { width: 100%; min-width: 0; }
+      .session-status { align-items: center; text-align: center; }
+      .total-status { text-align: center; }
+    }
+
+
+    /* Pannelli richiudibili, disposti sotto al cronometro */
+    .layout:not(.settings-open) { grid-template-columns: minmax(0, 1fr); }
+    .layout:not(.settings-open) .main-card { max-width: 100%; }
+    .controls { grid-template-columns: 1fr 1.3fr; }
+    .panel-launchers {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px; margin-top: 13px;
+    }
+    .panel-launcher {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 6px; min-width: 0; min-height: 51px;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 15px; color: var(--text); cursor: pointer;
+      padding: 10px 7px; font-size: .86rem; font-weight: 780;
+      line-height: 1.2; text-align: center; transition: background .2s, border-color .2s;
+    }
+    .panel-launcher:hover, .panel-launcher[aria-expanded="true"] {
+      background: var(--accent-soft); border-color: var(--accent);
+    }
+    .panel-launcher .launch-icon { font-size: 1.15rem; }
+    .panel-launcher:focus-visible, .preset-option:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .panel-launcher[aria-expanded="true"] .launch-arrow { transform: rotate(180deg); }
+    .launch-arrow { display: inline-block; transition: transform .2s; color: var(--accent); }
+    .active-rhythm {
+      margin: 12px 0 0; padding: 8px 11px; text-align: center;
+      background: var(--panel-2); border: 1px solid var(--border);
+      border-radius: 11px; color: var(--muted); font-size: .84rem;
+    }
+    .active-rhythm strong { color: var(--text); }
+    .settings-card { align-self: start; }
+    .panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .record-head-actions { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+    .presets-card { padding: clamp(18px, 3vw, 28px); margin-top: 18px; }
+    .presets-card h2 { font-size: 1.3rem; margin: 0 0 6px; letter-spacing: -.02em; }
+    .presets-card .panel-subtitle { color: var(--muted); margin: 0; line-height: 1.5; }
+    .preset-group { margin-top: 24px; }
+    .preset-group h3 { font-size: 1.05rem; margin: 0 0 4px; }
+    .preset-group .group-note { color: var(--muted); margin: 0 0 11px; font-size: .84rem; }
+    .preset-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .preset-option {
+      display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0;
+      padding: 14px; border: 1px solid var(--border); border-radius: 17px;
+      color: var(--text); background: var(--panel-2); cursor: pointer;
+      text-align: left; font: inherit; transition: background .2s, border-color .2s, transform .12s;
+    }
+    .preset-option:hover { border-color: var(--accent); }
+    .preset-option:active { transform: scale(.99); }
+    .preset-option.selected { border: 2px solid var(--accent); padding: 13px; background: var(--accent-soft); }
+    .preset-option-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .preset-time { font-size: 1.09rem; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+    .preset-rpm { color: var(--accent); font-size: .81rem; font-weight: 800; }
+    .preset-desc { color: var(--muted); font-size: .87rem; line-height: 1.4; }
+    .preset-option.selected .preset-desc { color: var(--text); }
+    .preset-choice { font-size: .77rem; color: var(--success); font-weight: 800; min-height: 1em; }
+    .preset-caution { margin: 19px 0 0; font-size: .84rem; line-height: 1.5; color: var(--muted); }
+    .favorite-group {
+      border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--border));
+      border-radius: 18px; background: var(--accent-soft);
+      padding: 16px; margin-top: 18px;
+    }
+    .favorite-group h3 { font-size: 1.15rem; }
+    .favorite-group .preset-option { background: var(--panel); }
+    .favorite-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .favorite-actions .mini-btn { flex: 1 1 190px; }
+
+    @media (max-width: 820px) { .layout.settings-open { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .preset-list { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      .controls { grid-template-columns: 1fr 1.3fr; }
+      .controls .btn-primary { grid-column: auto; grid-row: auto; }
+      .panel-launchers { gap: 6px; }
+      .panel-launcher { padding: 9px 5px; font-size: .75rem; }
+      .panel-launcher .launch-icon { font-size: 1rem; }
+      .panel-launcher .launch-arrow { display: none; }
+    }
+    [hidden] { display: none !important; }
+
+    .awake-video {
+      position: fixed;
+      right: 1px;
+      bottom: 1px;
+      width: 16px;
+      height: 16px;
+      opacity: .018;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Respirazione guidata</h1>
+          <p>Imposta i tempi e segui il cerchio che respira.</p>
+        </div>
+      </div>
+      <div class="icon-row">
+        <button class="icon-btn" id="installAppBtn" type="button" hidden aria-label="Installa applicazione" title="Installa applicazione">⬇</button>
+        <button class="icon-btn" id="fullscreenBtn" type="button" aria-label="Schermo intero" title="Schermo intero">⛶</button>
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Cambia tema" title="Tema chiaro o scuro">◐</button>
+      </div>
+    </header>
+
+    <section class="layout" id="mainLayout">
+      <div class="card main-card">
+        <div class="mode-switch" role="group" aria-label="Modalità di respirazione">
+          <button id="mode4Btn" class="active" type="button">4 tempi</button>
+          <button id="mode2Btn" type="button">2 tempi</button>
+        </div>
+
+        <div class="stage" role="img" aria-label="Cerchio animato della respirazione">
+          <svg id="breathRing" viewBox="0 0 480 480">
+            <defs>
+              <radialGradient id="orbGrad" cx="50%" cy="36%" r="72%">
+                <stop class="orb-stop-a" offset="0%"></stop>
+                <stop class="orb-stop-b" offset="100%"></stop>
+              </radialGradient>
+              <radialGradient id="auraGrad" cx="50%" cy="50%" r="50%">
+                <stop class="aura-stop-a" offset="45%"></stop>
+                <stop class="aura-stop-b" offset="100%"></stop>
+              </radialGradient>
+            </defs>
+            <circle class="dots" cx="240" cy="240" r="205"></circle>
+            <circle id="orbAura" cx="240" cy="240" r="100" fill="url(#auraGrad)"></circle>
+            <g id="ringBase"></g>
+            <g id="ringActive"></g>
+            <circle id="orbEcho" class="orb-echo" cx="240" cy="240" r="80"></circle>
+            <circle id="orbCore" class="orb-core" cx="240" cy="240" r="64" fill="url(#orbGrad)"></circle>
+            <circle id="marker" class="marker" cx="240" cy="65" r="11"></circle>
+          </svg>
+          <div class="stage-center">
+            <div class="eyebrow">Fase attuale</div>
+            <h2 class="phase-name phase-inhale" id="phaseName" aria-live="polite">Pronto</h2>
+            <div class="countdown" id="countdown">4,0 s</div>
+          </div>
+        </div>
+
+        <div class="legend" id="phaseLegend" aria-label="Fasi del ciclo"></div>
+
+        <div class="controls">
+          <button class="btn btn-secondary" id="resetBtn" type="button">Azzera</button>
+          <button class="btn btn-primary" id="startBtn" type="button">Avvia</button>
+        </div>
+        <div class="panel-launchers" role="group" aria-label="Apri o chiudi i pannelli dell'esercizio">
+          <button class="panel-launcher" id="settingsBtn" type="button" aria-controls="settingsPanel" aria-expanded="false"><span class="launch-icon" aria-hidden="true">⚙</span> Tempi e durata <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+          <button class="panel-launcher" id="recordPanelBtn" type="button" aria-controls="recordCard" aria-expanded="false"><span class="launch-icon" aria-hidden="true">◉</span> Il mio ritmo <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+          <button class="panel-launcher" id="presetsPanelBtn" type="button" aria-controls="presetsPanel" aria-expanded="false"><span class="launch-icon" aria-hidden="true">☷</span> Ritmi guidati <span class="launch-arrow" aria-hidden="true">⌄</span></button>
+        </div>
+        <p class="active-rhythm" id="activeRhythm" aria-live="polite">Ritmo attuale: <strong>4–4–4–4</strong></p>
+
+        <div class="status-row">
+          <div class="cycle-counter" aria-live="polite" aria-label="Numero di cicli completati">
+            <span class="cycle-counter-label">Cicli<br>completati</span>
+            <strong class="cycle-counter-number" id="cycleLabel">0</strong>
+          </div>
+          <div class="session-status">
+            <span class="total-status" id="totalLabel">Durata ciclo: 16 s</span>
+            <span class="session-remaining" id="sessionRemainingLabel">Tempo restante: 10:00</span>
+            <span class="wake-indicator" id="wakeStatus">Schermo: pronto</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card settings-card hidden" id="settingsPanel" aria-label="Tempi e durata">
+        <div class="settings-head">
+          <h2>Definizione dei tempi</h2>
+          <button class="icon-btn" id="closeSettingsBtn" type="button" aria-label="Nascondi impostazioni" title="Nascondi">×</button>
+        </div>
+
+        <div class="phase-tabs" id="phaseTabs" aria-label="Scegli la fase da modificare"></div>
+
+        <div class="time-editor">
+          <div class="editor-title">
+            <strong id="editorPhaseName">Inspirazione con il naso</strong>
+            <span>da 0 a 30 s · con 0 la fase viene saltata</span>
+          </div>
+          <div class="stepper">
+            <button id="minusBtn" type="button" aria-label="Diminuisci il tempo">−</button>
+            <input id="timeInput" type="number" min="0" max="30" step="0.5" inputmode="decimal" aria-label="Durata in secondi" />
+            <button id="plusBtn" type="button" aria-label="Aumenta il tempo">+</button>
+          </div>
+          <input class="range" id="timeRange" type="range" min="0" max="30" step="0.5" aria-label="Durata della fase" />
+          <div class="quick-presets">
+            <button type="button" data-value="0">0 s</button>
+            <button type="button" data-value="2">2 s</button>
+            <button type="button" data-value="4">4 s</button>
+            <button type="button" data-value="6">6 s</button>
+          </div>
+        </div>
+
+        <div class="bg-box">
+          <div class="switch-copy">
+            <strong>Colore di sfondo</strong>
+            <span>Scegli un'atmosfera o un colore tuo: testi e pannelli si adattano da soli</span>
+          </div>
+          <div class="swatches" id="bgSwatches" role="group" aria-label="Colori di sfondo predefiniti"></div>
+          <div class="bg-custom-row">
+            <label class="color-pick">
+              <input type="color" id="bgCustom" value="#0b1120" aria-label="Colore di sfondo personalizzato" />
+              <span>Colore personalizzato</span>
+            </label>
+            <button class="mini-btn" id="bgResetBtn" type="button">Predefinito</button>
+          </div>
+        </div>
+
+        <div class="session-box">
+          <div class="switch-copy">
+            <strong>Durata della sessione</strong>
+            <span>Al termine l'esercizio si arresta e il blocco dello schermo viene rilasciato</span>
+          </div>
+          <div class="session-input-row">
+            <input id="sessionMinutesInput" type="number" min="0" max="180" step="1" inputmode="numeric" value="10" aria-label="Durata della sessione in minuti; zero significa senza limite" />
+            <span>minuti</span>
+          </div>
+          <div class="session-presets" aria-label="Durate rapide della sessione">
+            <button type="button" data-session-minutes="5">5 min</button>
+            <button type="button" data-session-minutes="10">10 min</button>
+            <button type="button" data-session-minutes="15">15 min</button>
+            <button type="button" data-session-minutes="0">Senza limite</button>
+          </div>
+          <p class="session-hint" id="sessionHint">Imposta 0 per lasciare la sessione senza limite.</p>
+          <p class="session-hint" id="wakeHint">Il programma prova sia il blocco ufficiale sia una riproduzione video continua. Un file aperto dalla cartella Download non può però imporre a MagicOS di ignorare sempre il time-out.</p>
+        </div>
+
+        <div class="sound-box">
+          <div class="switch-line">
+            <div class="switch-copy">
+              <strong>Segnali sonori</strong>
+              <span>Campane morbide a inizio fase: note che salgono per inspirare, scendono per espirare; acute per il trattenimento a polmoni pieni, gravi a polmoni vuoti</span>
+            </div>
+            <button class="toggle" id="soundToggle" type="button" role="switch" aria-checked="false" aria-label="Attiva segnali sonori"></button>
+          </div>
+          <div class="volume-row">
+            <label for="volumeRange"><span>Volume</span><span id="volumeValue">85%</span></label>
+            <input id="volumeRange" type="range" min="0" max="100" value="85" />
+          </div>
+          <button class="test-sounds-btn" id="testSoundsBtn" type="button">Attiva e prova tutti i segnali</button>
+          <p class="session-hint" id="audioStatus">Audio non ancora attivato. Premi il pulsante di prova una volta.</p>
+        </div>
+
+        <p class="apply-note">Le modifiche vengono salvate automaticamente. Se il ciclo è in corso, i nuovi tempi saranno applicati dal ciclo successivo. Il cursore regola il volume relativo del programma; il livello massimo reale dipende comunque dal volume multimediale impostato con i tasti del telefono.</p>
+      </aside>
+    </section>
+
+    <section class="card record-card hidden" id="recordCard" aria-labelledby="recTitle">
+      <div class="record-head">
+        <div>
+          <h2 id="recTitle">Trova il tuo ritmo ideale</h2>
+          <p>Respira come ti viene naturale e tocca lo schermo a ogni cambio di fase: il programma misura da solo i quattro tempi.</p>
+        </div>
+        <div class="record-head-actions">
+          <button class="btn btn-primary" id="recStartBtn" type="button">Registra il mio ritmo</button>
+          <button class="icon-btn" id="closeRecordBtn" type="button" title="Chiudi il pannello" aria-label="Chiudi Trova il tuo ritmo ideale">×</button>
+        </div>
+      </div>
+      <ol class="record-steps">
+        <li style="--chip: var(--c-inhale)"><b>Tocca</b> e inizia a inspirare</li>
+        <li style="--chip: var(--c-holdIn)"><b>Tocca</b> quando hai finito e trattieni</li>
+        <li style="--chip: var(--c-exhale)"><b>Tocca</b> quando hai finito ed espira</li>
+        <li style="--chip: var(--c-holdOut)"><b>Tocca</b> quando hai finito e trattieni a vuoto</li>
+        <li style="--chip: var(--c-inhale)"><b>Tocca</b> un'ultima volta alla fine della pausa</li>
+      </ol>
+      <p class="record-note">Se una fase non fa parte del tuo ritmo (per esempio non trattieni il respiro), premi «Salta» nella schermata di registrazione: quella fase varrà 0 secondi e verrà saltata durante l'esercizio.</p>
+      <div class="record-result hidden" id="recResult">
+        <h3>Il tuo ritmo</h3>
+        <div class="record-values" id="recValues"></div>
+        <div class="record-actions">
+          <button class="btn btn-primary" id="recApplyBtn" type="button">Usa e salva come preferito</button>
+          <button class="btn btn-secondary" id="recRetryBtn" type="button">Registra di nuovo</button>
+        </div>
+        <p class="record-note">I tempi vengono arrotondati al mezzo secondo e applicati alla modalità a 4 tempi. Il ritmo viene anche memorizzato come «Il mio preferito» nei Ritmi guidati, per le prossime sessioni. Puoi sostituirlo con una nuova registrazione o con i tempi impostati a mano.</p>
+      </div>
+    </section>
+
+    <section class="card presets-card hidden" id="presetsPanel" aria-labelledby="presetsTitle">
+      <div class="panel-header">
+        <div>
+          <h2 id="presetsTitle">Scegli un ritmo respiratorio</h2>
+          <p class="panel-subtitle">Tocca uno schema per applicarne immediatamente i tempi all'esercizio. I numeri indicano i secondi di inspirazione, eventuale pausa a polmoni pieni, espirazione e pausa finale.</p>
+        </div>
+        <button class="icon-btn" id="closePresetsBtn" type="button" aria-label="Chiudi ritmi guidati" title="Chiudi">×</button>
+      </div>
+      <section class="preset-group favorite-group" id="favoriteSection" aria-labelledby="favoriteTitle">
+        <h3 id="favoriteTitle">★ Il mio preferito</h3>
+        <p class="group-note" id="favoriteHint">Non hai ancora salvato un ritmo personale. Registralo in «Il mio ritmo», oppure usa il pulsante qui sotto per memorizzare i tempi attuali.</p>
+        <div class="preset-list">
+          <button type="button" id="favoriteOption" class="preset-option" aria-pressed="false" hidden>
+            <span class="preset-option-top"><span class="preset-time" id="favoritePattern"></span><span class="preset-rpm" id="favoriteRate"></span></span>
+            <span class="preset-desc">Il tuo ritmo personale memorizzato su questo dispositivo</span>
+            <span class="preset-choice" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="favorite-actions">
+          <button class="mini-btn" type="button" id="saveFavoriteCurrentBtn">★ Salva il ritmo attuale come preferito</button>
+          <button class="mini-btn" type="button" id="deleteFavoriteBtn" hidden>Elimina preferito</button>
+        </div>
+      </section>
+      <div id="presetGroups" aria-label="Schemi respiratori disponibili"></div>
+      <p class="preset-caution">Il preferito viene memorizzato soltanto su questo browser e dispositivo. La prova con il file HTML scaricato e la futura versione online possono avere memorie separate. Non usare la navigazione in incognito se vuoi conservarlo.</p>
+      <p class="preset-caution">Indicazioni orientative di benessere, non prescrizioni mediche. Non forzare il ritmo e interrompi in caso di affanno, capogiri o disagio; i ritmi con pause prolungate non sono adatti a tutti.</p>
+    </section>
+  </main>
+
+  <video id="awakeVideo" class="awake-video" muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="data:video/mp4;base64,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" type="video/mp4">
+  </video>
+
+
+  <div class="rec-overlay hidden" id="recOverlay" role="dialog" aria-modal="true" aria-label="Registrazione del ritmo">
+    <button class="icon-btn rec-close" id="recCancel" type="button" aria-label="Annulla registrazione">×</button>
+    <div class="rec-dots" id="recDots"><span></span><span></span><span></span><span></span></div>
+    <div class="rec-orb" id="recOrb"></div>
+    <div class="rec-text">
+      <div class="eyebrow" id="recEyebrow">Registrazione</div>
+      <h2 class="rec-phase" id="recPhase">Pronto?</h2>
+      <div class="rec-timer" id="recTimer">&nbsp;</div>
+      <p class="rec-hint" id="recHint">Tocca lo schermo in un punto qualsiasi quando inizi a inspirare.</p>
+    </div>
+    <button class="btn btn-secondary rec-skip hidden" id="recSkip" type="button">Questa fase non c'è: salta (0 s)</button>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const SVGNS = 'http://www.w3.org/2000/svg';
+      const CX = 240, CY = 240, RING_R = 175;
+      const ORB_MIN = 64, ORB_MAX = 142;
+      const SAMPLE_RATE = 44100;
+      const DEFAULT_BG = { light: '#f3f6fc', dark: '#0b1120' };
+
+      const PHASES = {
+        inhale:  { label: 'Inspirazione con il naso', short: 'Inspirazione con il naso', className: 'phase-inhale', default: 4 },
+        holdIn:  { label: 'Trattenimento', short: 'Trattieni', className: 'phase-holdIn', default: 4 },
+        exhale:  { label: 'Espirazione con la bocca', short: 'Espirazione con la bocca', className: 'phase-exhale', default: 4 },
+        holdOut: { label: 'Pausa finale', short: 'Trattieni', className: 'phase-holdOut', default: 4 }
+      };
+
+      const MODE_PHASES = {
+        4: ['inhale', 'holdIn', 'exhale', 'holdOut'],
+        2: ['inhale', 'exhale']
+      };
+
+      const BG_PRESETS = [
+        { name: 'Notte', color: '#0b1120' },
+        { name: 'Oceano', color: '#0b2b3b' },
+        { name: 'Foresta', color: '#0f2a21' },
+        { name: 'Viola', color: '#1c1436' },
+        { name: 'Bordeaux', color: '#34172a' },
+        { name: 'Alba', color: '#fdeee4' },
+        { name: 'Menta', color: '#e2f4ec' },
+        { name: 'Cielo', color: '#e4effd' },
+        { name: 'Lavanda', color: '#eee8fb' },
+        { name: 'Sabbia', color: '#f4eee1' }
+      ];
+
+      // Suoni: campane morbide. Salgono per inspirare, scendono per espirare;
+      // i trattenimenti sono un doppio tocco (acuto a polmoni pieni, grave a polmoni vuoti).
+      const SOUND_DEFS = {
+        inhale:  { len: 2.2, notes: [{ t: 0, f: 523.25, a: 1 }, { t: .17, f: 659.25, a: .9 }, { t: .34, f: 783.99, a: .95 }] },
+        holdIn:  { len: 1.9, notes: [{ t: 0, f: 783.99, a: 1 }, { t: .38, f: 783.99, a: .55 }] },
+        exhale:  { len: 2.4, notes: [{ t: 0, f: 783.99, a: 1 }, { t: .17, f: 659.25, a: .9 }, { t: .34, f: 523.25, a: .95 }] },
+        holdOut: { len: 2.1, notes: [{ t: 0, f: 293.66, a: 1 }, { t: .42, f: 293.66, a: .55 }] },
+        completion: { len: 3.4, notes: [{ t: 0, f: 523.25, a: .9 }, { t: .24, f: 659.25, a: .9 }, { t: .48, f: 783.99, a: .9 }, { t: .72, f: 1046.5, a: 1 }] }
+      };
+      const BELL_PARTIALS = [
+        { r: 1,     a: 1,   d: 2.1 },
+        { r: 1.004, a: .55, d: 2.4 },
+        { r: 2,     a: .42, d: 3.3 },
+        { r: 3,     a: .16, d: 4.8 },
+        { r: 4.2,   a: .07, d: 6.5 }
+      ];
+
+      const state = {
+        mode: 4,
+        durations: { inhale: 4, holdIn: 4, exhale: 4, holdOut: 4 },
+        selectedPhase: 'inhale',
+        running: false,
+        paused: false,
+        phaseIndex: 0,
+        phaseStartedAt: 0,
+        phaseElapsedBeforePause: 0,
+        cycles: 0,
+        sound: false,
+        volume: 0.85,
+        sessionMinutes: 10,
+        sessionStartedAt: 0,
+        sessionElapsedBeforePause: 0,
+        sessionEndTimer: null,
+        sessionCompleted: false,
+        animationId: null,
+        audioContext: null,
+        audioMaster: null,
+        audioCompressor: null,
+        audioElements: {},
+        audioUrls: [],
+        audioReady: false,
+        audioLastError: '',
+        wakeLock: null,
+        wakeFallbackActive: false,
+        wakeWatchdogId: null,
+        wakeRequestPending: false,
+        wakeFailureReason: '',
+        activeSnapshot: null,
+        baseTheme: 'dark',
+        bgColor: null,
+        favorite: null
+      };
+
+      const el = {
+        mode4Btn: document.getElementById('mode4Btn'),
+        mode2Btn: document.getElementById('mode2Btn'),
+        phaseName: document.getElementById('phaseName'),
+        countdown: document.getElementById('countdown'),
+        ringBase: document.getElementById('ringBase'),
+        ringActive: document.getElementById('ringActive'),
+        marker: document.getElementById('marker'),
+        orbCore: document.getElementById('orbCore'),
+        orbAura: document.getElementById('orbAura'),
+        orbEcho: document.getElementById('orbEcho'),
+        phaseLegend: document.getElementById('phaseLegend'),
+        startBtn: document.getElementById('startBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        settingsBtn: document.getElementById('settingsBtn'),
+        settingsPanel: document.getElementById('settingsPanel'),
+        closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+        phaseTabs: document.getElementById('phaseTabs'),
+        editorPhaseName: document.getElementById('editorPhaseName'),
+        minusBtn: document.getElementById('minusBtn'),
+        plusBtn: document.getElementById('plusBtn'),
+        timeInput: document.getElementById('timeInput'),
+        timeRange: document.getElementById('timeRange'),
+        soundToggle: document.getElementById('soundToggle'),
+        volumeRange: document.getElementById('volumeRange'),
+        volumeValue: document.getElementById('volumeValue'),
+        cycleLabel: document.getElementById('cycleLabel'),
+        totalLabel: document.getElementById('totalLabel'),
+        sessionRemainingLabel: document.getElementById('sessionRemainingLabel'),
+        wakeStatus: document.getElementById('wakeStatus'),
+        sessionMinutesInput: document.getElementById('sessionMinutesInput'),
+        sessionHint: document.getElementById('sessionHint'),
+        testSoundsBtn: document.getElementById('testSoundsBtn'),
+        audioStatus: document.getElementById('audioStatus'),
+        wakeHint: document.getElementById('wakeHint'),
+        themeBtn: document.getElementById('themeBtn'),
+        fullscreenBtn: document.getElementById('fullscreenBtn'),
+        awakeVideo: document.getElementById('awakeVideo'),
+        toast: document.getElementById('toast'),
+        bgSwatches: document.getElementById('bgSwatches'),
+        bgCustom: document.getElementById('bgCustom'),
+        bgResetBtn: document.getElementById('bgResetBtn')
+      };
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function roundHalf(value) {
+        return Math.round(value * 2) / 2;
+      }
+
+      function fmt(value) {
+        return value.toLocaleString('it-IT', { minimumFractionDigits: value % 1 ? 1 : 0, maximumFractionDigits: 1 });
+      }
+
+      // Fasi effettivamente eseguite: quelle a zero secondi vengono saltate.
+      function runKeysFor(durations, mode) {
+        return MODE_PHASES[mode].filter(k => durations[k] > 0);
+      }
+
+      function runKeys() {
+        return runKeysFor(state.durations, state.mode);
+      }
+
+      function currentPhaseKeys() {
+        return MODE_PHASES[state.mode];
+      }
+
+      function svgEl(name, attrs) {
+        const node = document.createElementNS(SVGNS, name);
+        Object.entries(attrs || {}).forEach(([k, v]) => node.setAttribute(k, v));
+        return node;
+      }
+
+      /* ---------- Salvataggio / caricamento ---------- */
+      function normalizedFavorite(value) {
+        if (!value || (value.mode !== 2 && value.mode !== 4) || !value.durations) return null;
+        const durations = {};
+        for (const key of Object.keys(PHASES)) {
+          if (value.durations[key] === null || value.durations[key] === undefined || value.durations[key] === '') return null;
+          const n = Number(value.durations[key]);
+          if (!Number.isFinite(n) || n < 0 || n > 30) return null;
+          durations[key] = clamp(roundHalf(n), 0, 30);
+        }
+        if (!runKeysFor(durations, value.mode).length) return null;
+        return { mode: value.mode, durations };
+      }
+      function favoriteFromCurrent() {
+        return normalizedFavorite({ mode: state.mode, durations: { ...state.durations } });
+      }
+      function saveSettings() {
+        try {
+          localStorage.setItem('breathGuideSettings', JSON.stringify({
+            mode: state.mode,
+            durations: state.durations,
+            sound: state.sound,
+            volume: state.volume,
+            sessionMinutes: state.sessionMinutes,
+            settingsVersion: 5,
+            theme: state.baseTheme,
+            bgColor: state.bgColor,
+            favorite: state.favorite
+          }));
+          return true;
+        } catch (_) {
+          // Alcuni visualizzatori di file locali bloccano localStorage.
+          // Il programma continua comunque a funzionare per la sessione corrente.
+          return false;
+        }
+      }
+
+      function loadSettings() {
+        try {
+          const saved = JSON.parse(localStorage.getItem('breathGuideSettings'));
+          if (!saved) return;
+          if (saved.mode === 2 || saved.mode === 4) state.mode = saved.mode;
+          if (saved.durations) {
+            for (const key of Object.keys(PHASES)) {
+              const n = Number(saved.durations[key]);
+              if (Number.isFinite(n)) state.durations[key] = clamp(roundHalf(n), 0, 30);
+            }
+          }
+          [2, 4].forEach(m => {
+            if (!MODE_PHASES[m].some(k => state.durations[k] > 0)) state.durations[MODE_PHASES[m][0]] = 4;
+          });
+          state.sound = Boolean(saved.sound);
+          if (Number.isFinite(saved.volume)) state.volume = clamp(saved.volume, 0, 1);
+          // Migrazione: le versioni precedenti usavano segnali molto deboli.
+          if (!saved.settingsVersion || saved.settingsVersion < 4) state.volume = Math.max(state.volume, .90);
+          if (Number.isFinite(saved.sessionMinutes)) state.sessionMinutes = clamp(Math.round(saved.sessionMinutes), 0, 180);
+          state.baseTheme = saved.theme === 'light' ? 'light' : 'dark';
+          if (typeof saved.bgColor === 'string' && /^#[0-9a-f]{6}$/i.test(saved.bgColor)) state.bgColor = saved.bgColor.toLowerCase();
+          state.favorite = normalizedFavorite(saved.favorite);
+        } catch (_) {}
+      }
+
+      function showToast(message) {
+        el.toast.textContent = message;
+        el.toast.classList.add('show');
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => el.toast.classList.remove('show'), 1800);
+      }
+
+      /* ---------- Tema e colore di sfondo ---------- */
+      function luminance(hex) {
+        const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+          .map(c => (c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4)));
+        return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+      }
+
+      function applyTheme() {
+        const root = document.documentElement;
+        if (state.bgColor) {
+          root.style.setProperty('--bg', state.bgColor);
+          root.dataset.theme = luminance(state.bgColor) > .21 ? 'light' : 'dark';
+        } else {
+          root.style.removeProperty('--bg');
+          root.dataset.theme = state.baseTheme;
+        }
+        const color = state.bgColor || DEFAULT_BG[root.dataset.theme];
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', color);
+        renderBgControls();
+      }
+
+      function setBackground(color) {
+        state.bgColor = color ? color.toLowerCase() : null;
+        applyTheme();
+        saveSettings();
+      }
+
+      function initBgSwatches() {
+        el.bgSwatches.innerHTML = '';
+        BG_PRESETS.forEach(p => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'swatch';
+          b.title = p.name;
+          b.setAttribute('aria-label', `Sfondo ${p.name}`);
+          b.dataset.color = p.color;
+          b.style.setProperty('--sw', p.color);
+          b.addEventListener('click', () => setBackground(p.color));
+          el.bgSwatches.appendChild(b);
+        });
+      }
+
+      function renderBgControls() {
+        el.bgSwatches.querySelectorAll('.swatch').forEach(b => {
+          b.classList.toggle('active', Boolean(state.bgColor) && b.dataset.color === state.bgColor);
+        });
+        el.bgCustom.value = state.bgColor || DEFAULT_BG[document.documentElement.dataset.theme] || '#0b1120';
+      }
+
+      /* ---------- Modalità e impostazioni tempi ---------- */
+      function setMode(mode) {
+        if (state.mode === mode) return;
+        resetSession(false);
+        state.mode = mode;
+        if (!runKeys().length) {
+          state.durations[MODE_PHASES[mode][0]] = 4;
+          showToast('In questa modalità tutte le fasi erano a zero: inspirazione impostata a 4 s.');
+        }
+        if (!currentPhaseKeys().includes(state.selectedPhase)) state.selectedPhase = 'inhale';
+        renderAll();
+        saveSettings();
+      }
+
+      function renderMode() {
+        el.mode4Btn.classList.toggle('active', state.mode === 4);
+        el.mode2Btn.classList.toggle('active', state.mode === 2);
+        el.mode4Btn.setAttribute('aria-pressed', String(state.mode === 4));
+        el.mode2Btn.setAttribute('aria-pressed', String(state.mode === 2));
+      }
+
+      function renderPhaseTabs() {
+        el.phaseTabs.innerHTML = '';
+        const keys = currentPhaseKeys();
+        keys.forEach(key => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'phase-tab' + (state.selectedPhase === key ? ' active' : '');
+          btn.dataset.phase = key;
+          btn.style.setProperty('--chip', `var(--c-${key})`);
+          btn.innerHTML = `${PHASES[key].short}<small>${state.durations[key] > 0 ? fmt(state.durations[key]) + ' s' : 'saltata'}</small>`;
+          btn.addEventListener('click', () => {
+            state.selectedPhase = key;
+            renderPhaseTabs();
+            renderEditor();
+          });
+          el.phaseTabs.appendChild(btn);
+        });
+      }
+
+      function renderEditor() {
+        const key = state.selectedPhase;
+        el.editorPhaseName.textContent = PHASES[key].label;
+        el.timeInput.value = state.durations[key];
+        el.timeRange.value = state.durations[key];
+      }
+
+      function updateDuration(raw) {
+        const num = Number(raw);
+        const previous = state.durations[state.selectedPhase];
+        let value = clamp(roundHalf(Number.isFinite(num) && String(raw).trim() !== '' ? num : previous), 0, 30);
+        state.durations[state.selectedPhase] = value;
+        if (!runKeys().length) {
+          value = previous > 0 ? previous : .5;
+          state.durations[state.selectedPhase] = value;
+          showToast('Almeno una fase deve durare più di zero.');
+        }
+        renderPhaseTabs();
+        renderEditor();
+        if (!state.running) renderGraph();
+        renderStatus();
+        if (!state.running) setReadyReadout();
+        updatePresetSelection();
+        saveSettings();
+      }
+
+      /* ---------- Anello progressivo + orb ---------- */
+      function getGeometry(durations = state.durations, mode = state.mode) {
+        const keys = runKeysFor(durations, mode);
+        const total = keys.reduce((sum, key) => sum + durations[key], 0);
+        let a = 0;
+        const segments = keys.map(key => {
+          const span = 360 * durations[key] / total;
+          const seg = { key, a1: a, a2: a + span, span, gap: Math.min(8, span * .45) };
+          a += span;
+          return seg;
+        });
+        return { segments, total };
+      }
+
+      function polar(deg, r = RING_R) {
+        const a = deg * Math.PI / 180;
+        return { x: CX + r * Math.sin(a), y: CY - r * Math.cos(a) };
+      }
+
+      function arcPath(startDeg, endDeg) {
+        const p1 = polar(startDeg);
+        const p2 = polar(endDeg);
+        const large = (endDeg - startDeg) > 180 ? 1 : 0;
+        return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${RING_R} ${RING_R} 0 ${large} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+      }
+
+      function placeMarker(deg) {
+        const p = polar(deg);
+        el.marker.setAttribute('cx', p.x.toFixed(2));
+        el.marker.setAttribute('cy', p.y.toFixed(2));
+      }
+
+      function setOrbLevel(level) {
+        const r = ORB_MIN + (ORB_MAX - ORB_MIN) * clamp(level, 0, 1);
+        el.orbCore.setAttribute('r', r.toFixed(2));
+        el.orbEcho.setAttribute('r', (r + 17).toFixed(2));
+        el.orbAura.setAttribute('r', (r * 1.55).toFixed(2));
+      }
+
+      function easeInOut(p) {
+        return .5 - .5 * Math.cos(Math.PI * p);
+      }
+
+      function orbLevelFor(key, progress) {
+        if (key === 'inhale') return easeInOut(progress);
+        if (key === 'holdIn') return 1;
+        if (key === 'exhale') return 1 - easeInOut(progress);
+        return 0;
+      }
+
+      function renderLegend(geom) {
+        el.phaseLegend.innerHTML = '';
+        geom.segments.forEach((seg, index) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.dataset.index = index;
+          chip.style.setProperty('--chip', `var(--c-${seg.key})`);
+          chip.innerHTML = `<i></i>${PHASES[seg.key].short} <b>${fmt(state.durations[seg.key])} s</b>`;
+          el.phaseLegend.appendChild(chip);
+        });
+      }
+
+      function renderGraph() {
+        const geom = getGeometry();
+        el.ringBase.replaceChildren();
+        el.ringActive.replaceChildren();
+
+        geom.segments.forEach((seg, index) => {
+          const d = arcPath(seg.a1 + seg.gap / 2, seg.a2 - seg.gap / 2);
+          el.ringBase.appendChild(svgEl('path', { d, class: 'ring-base' }));
+          const active = svgEl('path', {
+            d,
+            class: 'ring-active',
+            pathLength: '1',
+            'stroke-dasharray': '1 1',
+            'stroke-dashoffset': '1'
+          });
+          active.style.setProperty('--seg', `var(--c-${seg.key})`);
+          active.style.opacity = '0';
+          active.dataset.index = index;
+          el.ringActive.appendChild(active);
+        });
+
+        renderLegend(geom);
+
+        if (!state.running) {
+          placeMarker(0);
+          setOrbLevel(0);
+        }
+      }
+
+      function updateRing(index, progress, geom) {
+        const seg = geom.segments[index];
+        placeMarker(seg.a1 + seg.span * progress);
+        const arcs = el.ringActive.children;
+        for (let i = 0; i < arcs.length; i += 1) {
+          let f;
+          if (i < index) f = 1;
+          else if (i > index) f = 0;
+          else f = clamp((progress * seg.span - seg.gap / 2) / Math.max(.001, seg.span - seg.gap), 0, 1);
+          arcs[i].style.opacity = f > .002 ? '1' : '0';
+          arcs[i].setAttribute('stroke-dashoffset', String(1 - f));
+        }
+      }
+
+      function setActiveSegment(index) {
+        const keys = state.activeSnapshot ? state.activeSnapshot.keys : currentPhaseKeys();
+        const key = index >= 0 && keys[index] ? keys[index] : 'inhale';
+        document.documentElement.style.setProperty('--pc', `var(--c-${key})`);
+        el.phaseLegend.querySelectorAll('.chip').forEach(chip => {
+          chip.classList.toggle('active', Number(chip.dataset.index) === index);
+        });
+      }
+
+      /* ---------- Rendering generale ---------- */
+      function renderSound() {
+        el.soundToggle.classList.toggle('on', state.sound);
+        el.soundToggle.setAttribute('aria-checked', String(state.sound));
+        el.volumeRange.value = Math.round(state.volume * 100);
+        el.volumeValue.textContent = `${Math.round(state.volume * 100)}%`;
+        Object.values(state.audioElements).forEach(audio => { audio.volume = state.volume; });
+        if (el.audioStatus) {
+          if (state.audioLastError) {
+            el.audioStatus.textContent = `Audio bloccato dal browser: ${state.audioLastError}`;
+            el.audioStatus.style.color = 'var(--danger)';
+          } else if (state.audioReady) {
+            el.audioStatus.textContent = 'Audio attivato. I segnali usano il canale multimediale del telefono.';
+            el.audioStatus.style.color = 'var(--success)';
+          } else {
+            el.audioStatus.textContent = 'Audio non ancora attivato. Premi il pulsante di prova una volta.';
+            el.audioStatus.style.color = '';
+          }
+        }
+      }
+
+      function formatClock(seconds) {
+        const safe = Math.max(0, Math.ceil(seconds));
+        const minutes = Math.floor(safe / 60);
+        const secs = safe % 60;
+        return `${minutes}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function getSessionElapsed(now = performance.now()) {
+        if (!state.running) return state.sessionElapsedBeforePause;
+        if (state.paused) return state.sessionElapsedBeforePause;
+        return Math.max(0, (now - state.sessionStartedAt) / 1000);
+      }
+
+      function renderSessionSettings() {
+        el.sessionMinutesInput.value = state.sessionMinutes;
+        el.sessionHint.textContent = state.sessionMinutes === 0
+          ? 'La sessione continuerà finché non la metti in pausa o la azzeri.'
+          : `La sessione terminerà automaticamente dopo ${state.sessionMinutes} ${state.sessionMinutes === 1 ? 'minuto' : 'minuti'}.`;
+      }
+
+      function updateSessionDisplay(now = performance.now()) {
+        if (state.sessionMinutes === 0) {
+          el.sessionRemainingLabel.textContent = state.running ? 'Tempo restante: senza limite' : 'Sessione: senza limite';
+          return;
+        }
+        const limit = state.sessionMinutes * 60;
+        const remaining = Math.max(0, limit - getSessionElapsed(now));
+        el.sessionRemainingLabel.textContent = `${state.running ? 'Tempo restante' : 'Durata sessione'}: ${formatClock(remaining)}`;
+      }
+
+      function updateWakeStatus() {
+        el.wakeStatus.className = 'wake-indicator';
+        if (!state.running || state.paused) {
+          el.wakeStatus.textContent = 'Schermo: pronto';
+        } else if (state.wakeLock && !state.wakeLock.released) {
+          el.wakeStatus.classList.add('active');
+          el.wakeStatus.textContent = 'Schermo: blocco ufficiale attivo';
+        } else if (state.wakeFallbackActive) {
+          el.wakeStatus.classList.add('fallback');
+          el.wakeStatus.textContent = 'Schermo: video attivo, non garantito';
+        } else {
+          el.wakeStatus.classList.add('failed');
+          el.wakeStatus.textContent = 'Schermo: blocco non disponibile';
+        }
+        if (el.wakeHint) {
+          const protocol = location.protocol || '';
+          if (!window.isSecureContext || !('wakeLock' in navigator)) {
+            el.wakeHint.textContent = `Il blocco ufficiale non è disponibile in questa apertura (${protocol || 'origine sconosciuta'}). Il programma usa il video continuo, ma MagicOS può comunque applicare il time-out. Per una garanzia reale serve una pagina HTTPS installata o un'app Android.`;
+          } else {
+            el.wakeHint.textContent = state.wakeFailureReason
+              ? `Il browser ha rifiutato o rilasciato il blocco: ${state.wakeFailureReason}. Il video continuo resta attivo come riserva.`
+              : 'Il programma richiede il blocco ufficiale e mantiene anche una riproduzione video continua come riserva.';
+          }
+        }
+      }
+
+      function renderStatus() {
+        el.cycleLabel.textContent = String(state.cycles);
+        const total = currentPhaseKeys().reduce((sum, key) => sum + state.durations[key], 0);
+        el.totalLabel.textContent = `Durata ciclo: ${fmt(total)} s`;
+        updateSessionDisplay();
+        updateWakeStatus();
+      }
+
+      function setReadyReadout() {
+        const first = runKeys()[0] || currentPhaseKeys()[0];
+        el.phaseName.textContent = 'Pronto';
+        el.phaseName.className = `phase-name ${PHASES[first].className}`;
+        el.countdown.textContent = `${fmt(state.durations[first])} s`;
+        setActiveSegment(-1);
+      }
+
+      function renderAll() {
+        renderMode();
+        renderPhaseTabs();
+        renderEditor();
+        renderGraph();
+        renderSound();
+        renderSessionSettings();
+        renderStatus();
+        if (!state.running) setReadyReadout();
+        updatePresetSelection();
+      }
+
+      /* ---------- Audio: sintesi di campane morbide ---------- */
+      function writeAscii(view, offset, text) {
+        for (let i = 0; i < text.length; i += 1) view.setUint8(offset + i, text.charCodeAt(i));
+      }
+
+      function makeWavUrl(def) {
+        const total = Math.round(def.len * SAMPLE_RATE);
+        const buf = new Float32Array(total);
+        def.notes.forEach(note => {
+          const start = Math.round(note.t * SAMPLE_RATE);
+          const end = Math.min(total, start + Math.round(2.0 * SAMPLE_RATE));
+          for (let i = start; i < end; i += 1) {
+            const t = (i - start) / SAMPLE_RATE;
+            let v = 0;
+            for (const p of BELL_PARTIALS) {
+              v += p.a * Math.sin(2 * Math.PI * note.f * p.r * t) * Math.exp(-p.d * t);
+            }
+            buf[i] += v * Math.min(1, t / .006) * note.a;
+          }
+        });
+        // Dissolvenza finale e normalizzazione: ogni segnale ha lo stesso picco.
+        const fade = Math.round(.08 * SAMPLE_RATE);
+        let peak = 0;
+        for (let i = 0; i < total; i += 1) {
+          if (i > total - fade) buf[i] *= (total - i) / fade;
+          peak = Math.max(peak, Math.abs(buf[i]));
+        }
+        const gain = peak > 0 ? .92 / peak : 1;
+
+        const buffer = new ArrayBuffer(44 + total * 2);
+        const view = new DataView(buffer);
+        writeAscii(view, 0, 'RIFF');
+        view.setUint32(4, 36 + total * 2, true);
+        writeAscii(view, 8, 'WAVE');
+        writeAscii(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, SAMPLE_RATE, true);
+        view.setUint32(28, SAMPLE_RATE * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeAscii(view, 36, 'data');
+        view.setUint32(40, total * 2, true);
+        for (let i = 0; i < total; i += 1) view.setInt16(44 + i * 2, Math.round(clamp(buf[i] * gain, -1, 1) * 32767), true);
+        const url = URL.createObjectURL(new Blob([view], { type: 'audio/wav' }));
+        state.audioUrls.push(url);
+        return url;
+      }
+
+      function initAudioElements() {
+        if (Object.keys(state.audioElements).length) return;
+        Object.entries(SOUND_DEFS).forEach(([key, def]) => {
+          const audio = new Audio(makeWavUrl(def));
+          audio.preload = 'auto';
+          audio.volume = state.volume;
+          audio.playsInline = true;
+          state.audioElements[key] = audio;
+        });
+      }
+
+      async function ensureAudio() {
+        initAudioElements();
+        if (!state.audioContext) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            state.audioContext = new AudioCtx();
+            state.audioMaster = state.audioContext.createGain();
+            state.audioCompressor = state.audioContext.createDynamicsCompressor();
+            state.audioCompressor.threshold.value = -12;
+            state.audioCompressor.knee.value = 6;
+            state.audioCompressor.ratio.value = 4;
+            state.audioCompressor.attack.value = 0.003;
+            state.audioCompressor.release.value = 0.2;
+            state.audioMaster.gain.value = 1;
+            state.audioMaster.connect(state.audioCompressor).connect(state.audioContext.destination);
+          }
+        }
+        try {
+          if (state.audioContext && state.audioContext.state === 'suspended') await state.audioContext.resume();
+          state.audioLastError = '';
+          renderSound();
+          return state.audioContext;
+        } catch (error) {
+          state.audioLastError = error?.message || 'attivazione non consentita';
+          renderSound();
+          return null;
+        }
+      }
+
+      function bellTone(ctx, frequency, start, gainValue) {
+        if (!ctx) return;
+        BELL_PARTIALS.forEach(p => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = frequency * p.r;
+          const peak = Math.max(.0001, gainValue * p.a * .5);
+          gain.gain.setValueAtTime(.0001, start);
+          gain.gain.linearRampToValueAtTime(peak, start + .006);
+          gain.gain.exponentialRampToValueAtTime(.0001, start + Math.min(2, 5 / p.d));
+          osc.connect(gain).connect(state.audioMaster || ctx.destination);
+          osc.start(start);
+          osc.stop(start + 2.05);
+        });
+      }
+
+      function webAudioFallback(key) {
+        const ctx = state.audioContext;
+        const def = SOUND_DEFS[key];
+        if (!ctx || !def) return;
+        const now = ctx.currentTime + .01;
+        def.notes.forEach(n => bellTone(ctx, n.f, now + n.t, .6 * state.volume * n.a));
+      }
+
+      async function playStoredSound(key) {
+        if (!state.sound || state.volume <= 0) return false;
+        initAudioElements();
+        const audio = state.audioElements[key];
+        if (!audio) return false;
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = state.volume;
+          await audio.play();
+          state.audioReady = true;
+          state.audioLastError = '';
+          renderSound();
+          return true;
+        } catch (error) {
+          state.audioLastError = error?.message || 'riproduzione non consentita';
+          await ensureAudio();
+          webAudioFallback(key);
+          renderSound();
+          return false;
+        }
+      }
+
+      async function playPhaseSound(key) {
+        if (!state.sound || state.volume <= 0) return;
+        await playStoredSound(key);
+        if ('vibrate' in navigator) {
+          const patterns = { inhale: [45], holdIn: [55, 80, 55], exhale: [90], holdOut: [45, 70, 45, 70, 80] };
+          try { navigator.vibrate(patterns[key] || [45]); } catch (_) {}
+        }
+      }
+
+      async function playCompletionSound() {
+        if (!state.sound || state.volume <= 0) return;
+        await playStoredSound('completion');
+      }
+
+      async function testAllSounds() {
+        state.sound = true;
+        initAudioElements();
+        await ensureAudio();
+        renderSound();
+        saveSettings();
+        const keys = runKeys();
+        for (const key of keys) {
+          await playStoredSound(key);
+          await new Promise(resolve => setTimeout(resolve, key === 'holdOut' ? 1500 : 1300));
+        }
+        showToast(state.audioReady ? 'Segnali attivati. Regola anche il volume multimediale del telefono.' : 'Il browser ha bloccato l’audio: premi di nuovo il pulsante di prova.');
+      }
+
+      /* ---------- Blocco schermo ---------- */
+      async function activateAwakeFallback() {
+        if (!el.awakeVideo) return false;
+        try {
+          el.awakeVideo.muted = false;
+          el.awakeVideo.volume = 0.01;
+          el.awakeVideo.loop = true;
+          el.awakeVideo.playsInline = true;
+          el.awakeVideo.setAttribute('playsinline', '');
+          el.awakeVideo.setAttribute('webkit-playsinline', '');
+          el.awakeVideo.disablePictureInPicture = true;
+          if (el.awakeVideo.paused || el.awakeVideo.ended) {
+            el.awakeVideo.currentTime = 0;
+            await el.awakeVideo.play();
+          }
+          state.wakeFallbackActive = !el.awakeVideo.paused;
+        } catch (error) {
+          state.wakeFallbackActive = false;
+          state.wakeFailureReason = error?.message || 'riproduzione video non consentita';
+        }
+        updateWakeStatus();
+        return state.wakeFallbackActive;
+      }
+
+      function deactivateAwakeFallback() {
+        if (!el.awakeVideo) return;
+        try {
+          el.awakeVideo.pause();
+          el.awakeVideo.currentTime = 0;
+        } catch (_) {}
+        state.wakeFallbackActive = false;
+        updateWakeStatus();
+      }
+
+      function startWakeWatchdog() {
+        clearInterval(state.wakeWatchdogId);
+        state.wakeWatchdogId = setInterval(() => {
+          if (!state.running || state.paused) return;
+          if (document.visibilityState === 'visible') {
+            if (!state.wakeLock || state.wakeLock.released) requestWakeLock();
+            if (!state.wakeFallbackActive || el.awakeVideo.paused || el.awakeVideo.ended) activateAwakeFallback();
+          }
+          updateWakeStatus();
+        }, 4000);
+      }
+
+      function stopWakeWatchdog() {
+        clearInterval(state.wakeWatchdogId);
+        state.wakeWatchdogId = null;
+      }
+
+      async function requestWakeLock() {
+        if (!state.running || state.paused || state.wakeRequestPending) return;
+        state.wakeRequestPending = true;
+        activateAwakeFallback();
+
+        try {
+          if (!window.isSecureContext) throw new Error('Contesto non sicuro');
+          if (!('wakeLock' in navigator)) throw new Error('API non disponibile');
+          if (state.wakeLock && !state.wakeLock.released) {
+            updateWakeStatus();
+            return;
+          }
+
+          const sentinel = await navigator.wakeLock.request('screen');
+          state.wakeLock = sentinel;
+          state.wakeFailureReason = '';
+          sentinel.addEventListener('release', () => {
+            if (state.wakeLock === sentinel) state.wakeLock = null;
+            updateWakeStatus();
+            if (document.visibilityState === 'visible' && state.running && !state.paused) {
+              setTimeout(requestWakeLock, 300);
+            }
+          }, { once: true });
+        } catch (error) {
+          state.wakeFailureReason = error && error.message ? error.message : 'Blocco non concesso';
+        } finally {
+          state.wakeRequestPending = false;
+          updateWakeStatus();
+        }
+      }
+
+      async function releaseWakeLock() {
+        stopWakeWatchdog();
+        const lock = state.wakeLock;
+        state.wakeLock = null;
+        try {
+          if (lock && !lock.released) await lock.release();
+        } catch (_) {}
+        deactivateAwakeFallback();
+        updateWakeStatus();
+      }
+
+      /* ---------- Ciclo respiratorio ---------- */
+      function beginPhase(index, elapsed = 0, withSound = true) {
+        const keys = state.activeSnapshot.keys;
+        state.phaseIndex = index;
+        state.phaseStartedAt = performance.now() - elapsed * 1000;
+        state.phaseElapsedBeforePause = 0;
+        const key = keys[index];
+        el.phaseName.textContent = PHASES[key].short;
+        el.phaseName.className = `phase-name ${PHASES[key].className}`;
+        setActiveSegment(index);
+        if (withSound) playPhaseSound(key);
+      }
+
+      function clearSessionEndTimer() {
+        clearTimeout(state.sessionEndTimer);
+        state.sessionEndTimer = null;
+      }
+
+      function scheduleSessionEnd() {
+        clearSessionEndTimer();
+        if (!state.running || state.paused || state.sessionMinutes === 0) return;
+        const remainingMs = Math.max(0, state.sessionMinutes * 60000 - getSessionElapsed() * 1000);
+        state.sessionEndTimer = setTimeout(finishSession, remainingMs + 20);
+      }
+
+      async function finishSession() {
+        if (!state.running) return;
+        state.sessionElapsedBeforePause = state.sessionMinutes > 0 ? state.sessionMinutes * 60 : getSessionElapsed();
+        state.running = false;
+        state.paused = false;
+        state.sessionCompleted = true;
+        cancelAnimationFrame(state.animationId);
+        clearSessionEndTimer();
+        await releaseWakeLock();
+        renderGraph();
+        el.startBtn.textContent = 'Avvia nuova sessione';
+        el.phaseName.textContent = 'Sessione completata';
+        el.phaseName.className = 'phase-name phase-inhale';
+        el.countdown.textContent = '0:00';
+        setActiveSegment(-1);
+        updateSessionDisplay();
+        updateWakeStatus();
+        playCompletionSound();
+        showToast('Sessione completata. Ora lo schermo può spegnersi.');
+      }
+
+      function updateSessionMinutes(raw) {
+        const value = clamp(Math.round(Number(raw) || 0), 0, 180);
+        state.sessionMinutes = value;
+        renderSessionSettings();
+        updateSessionDisplay();
+        if (state.running && !state.paused) {
+          if (value > 0 && getSessionElapsed() >= value * 60) finishSession();
+          else scheduleSessionEnd();
+        }
+        saveSettings();
+      }
+
+      async function startOrPause() {
+        if (!state.running) {
+          if (state.sessionCompleted) resetSession(false);
+          if (!runKeys().length) {
+            showToast('Imposta almeno una fase maggiore di zero.');
+            return;
+          }
+          state.activeSnapshot = {
+            mode: state.mode,
+            keys: runKeysFor(state.durations, state.mode),
+            durations: { ...state.durations },
+            geometry: getGeometry({ ...state.durations }, state.mode)
+          };
+          state.running = true;
+          state.paused = false;
+          state.sessionCompleted = false;
+          state.sessionElapsedBeforePause = 0;
+          state.sessionStartedAt = performance.now();
+          el.startBtn.textContent = 'Pausa';
+          renderGraph();
+
+          // Queste chiamate partono direttamente dal tocco dell'utente: è essenziale su Android.
+          const videoPromise = activateAwakeFallback();
+          const audioPromise = state.sound ? ensureAudio() : Promise.resolve();
+          requestWakeLock();
+          await Promise.race([Promise.allSettled([videoPromise, audioPromise]), new Promise(resolve => setTimeout(resolve, 350))]);
+          if (!state.running || state.paused) return;
+
+          beginPhase(0);
+          startWakeWatchdog();
+          scheduleSessionEnd();
+          tick();
+          return;
+        }
+
+        if (!state.paused) {
+          const pauseNow = performance.now();
+          state.phaseElapsedBeforePause = (pauseNow - state.phaseStartedAt) / 1000;
+          state.sessionElapsedBeforePause = Math.max(0, (pauseNow - state.sessionStartedAt) / 1000);
+          state.paused = true;
+          cancelAnimationFrame(state.animationId);
+          clearSessionEndTimer();
+          el.startBtn.textContent = 'Riprendi';
+          el.phaseName.textContent = 'In pausa';
+          releaseWakeLock();
+          updateSessionDisplay();
+        } else {
+          state.paused = false;
+          state.sessionStartedAt = performance.now() - state.sessionElapsedBeforePause * 1000;
+          el.startBtn.textContent = 'Pausa';
+          const videoPromise = activateAwakeFallback();
+          const audioPromise = state.sound ? ensureAudio() : Promise.resolve();
+          requestWakeLock();
+          await Promise.race([Promise.allSettled([videoPromise, audioPromise]), new Promise(resolve => setTimeout(resolve, 350))]);
+          if (!state.running || state.paused) return;
+          beginPhase(state.phaseIndex, state.phaseElapsedBeforePause, false);
+          startWakeWatchdog();
+          scheduleSessionEnd();
+          tick();
+        }
+      }
+
+      function tick(now = performance.now()) {
+        if (!state.running || state.paused) return;
+
+        updateSessionDisplay(now);
+        if (state.sessionMinutes > 0 && getSessionElapsed(now) >= state.sessionMinutes * 60) {
+          finishSession();
+          return;
+        }
+
+        const snap = state.activeSnapshot;
+        const key = snap.keys[state.phaseIndex];
+        const duration = snap.durations[key];
+        let elapsed = (now - state.phaseStartedAt) / 1000;
+
+        if (elapsed >= duration) {
+          const overflow = elapsed - duration;
+          let nextIndex = state.phaseIndex + 1;
+          if (nextIndex >= snap.keys.length) {
+            state.cycles += 1;
+            renderStatus();
+            nextIndex = 0;
+            // Applica eventuali modifiche solo all'inizio del nuovo ciclo.
+            state.activeSnapshot = {
+              mode: state.mode,
+              keys: runKeysFor(state.durations, state.mode),
+              durations: { ...state.durations },
+              geometry: getGeometry({ ...state.durations }, state.mode)
+            };
+            renderGraph();
+          }
+          beginPhase(nextIndex, Math.max(0, overflow));
+          elapsed = Math.max(0, overflow);
+        }
+
+        const active = state.activeSnapshot;
+        const currentKey = active.keys[state.phaseIndex];
+        const currentDuration = active.durations[currentKey];
+        const progress = clamp(elapsed / currentDuration, 0, 1);
+        updateRing(state.phaseIndex, progress, active.geometry);
+        setOrbLevel(orbLevelFor(currentKey, progress));
+        el.countdown.textContent = `${fmt(Math.max(0, currentDuration - elapsed))} s`;
+
+        state.animationId = requestAnimationFrame(tick);
+      }
+
+      function resetSession(showMessage = true) {
+        state.running = false;
+        state.paused = false;
+        state.phaseIndex = 0;
+        state.phaseElapsedBeforePause = 0;
+        state.sessionElapsedBeforePause = 0;
+        state.sessionStartedAt = 0;
+        state.sessionCompleted = false;
+        state.cycles = 0;
+        state.activeSnapshot = null;
+        cancelAnimationFrame(state.animationId);
+        clearSessionEndTimer();
+        el.startBtn.textContent = 'Avvia';
+        releaseWakeLock();
+        renderGraph();
+        renderStatus();
+        setReadyReadout();
+        if (showMessage) showToast('Sessione azzerata.');
+      }
+
+
+      /* ---------- Pannelli e ritmi predefiniti ---------- */
+      const presetData = [{"name":"Due tempi","note":"Inspirazione – espirazione","entries":[["2–2","15","Ritmo rapido controllato, non particolarmente rilassante"],["2–4","10","Controllo della dispnea, espirazione a labbra socchiuse"],["3–3","10","Iniziare a regolarizzare il respiro"],["3–4","8,6","Rilassamento leggero"],["3–5","7,5","Gestione dello stress"],["3–6","6,7","Rilassamento con espirazione prolungata"],["4–4","7,5","Attenzione, meditazione, ritmo regolare"],["4–5","6,7","Rilassamento progressivo"],["4–6","6","Stress, ansia lieve, regolazione del respiro"],["4–7","5,5","Rilassamento profondo, se confortevole"],["4–8","5","Preparazione al sonno, se non provoca affanno"],["5–5","6","Respirazione lenta o coerente, variabilità cardiaca"],["5–6","5,5","Rilassamento e concentrazione calma"],["5–7","5","Meditazione, rallentamento respiratorio"],["6–6","5","Meditazione lenta, per chi è già abituato"],["6–8","4,3","Respirazione molto lenta, non adatta a tutti"]]},{"name":"Quattro tempi","note":"Inspirazione – pausa – espirazione – pausa","entries":[["2–1–3–1","8,6","Familiarizzazione con le pause"],["2–2–2–2","7,5","Coordinazione respiratoria"],["3–1–4–1","6,7","Rilassamento leggero"],["3–2–4–1","6","Controllo e consapevolezza del respiro"],["3–3–3–3","5","Respirazione quadrata, gestione dello stress"],["4–1–6–1","5","Rilassamento con espirazione prolungata"],["4–2–4–2","5","Concentrazione e controllo respiratorio"],["4–2–6–2","4,3","Meditazione e rilassamento lento"],["4–4–4–4","3,75","Box breathing, calma e concentrazione"],["4–4–6–2","3,75","Variante meditativa avanzata"],["5–2–6–2","4","Rilassamento molto lento"],["5–5–5–5","3","Variante quadrata impegnativa"],["6–3–6–3","3,3","Controllo respiratorio avanzato"],["3–0–3–4","6","Esempio di schema personalizzato, senza pausa dopo l’inspirazione"]]},{"name":"Tre tempi","note":"Inspirazione – trattenimento – espirazione (pausa finale a 0 secondi)","entries":[["4–7–8","3,2","Rilassamento prima del sonno"],["4–2–6","5","Regolazione del respiro"],["3–2–5","6","Rilassamento moderato"],["5–2–7","4,3","Meditazione lenta"]]}];
+      const panelSpec = [
+        { button: 'settingsBtn', panel: 'settingsPanel' },
+        { button: 'recordPanelBtn', panel: 'recordCard' },
+        { button: 'presetsPanelBtn', panel: 'presetsPanel' }
+      ];
+      function syncPanels() {
+        panelSpec.forEach(spec => {
+          const open = !document.getElementById(spec.panel).classList.contains('hidden');
+          document.getElementById(spec.button).setAttribute('aria-expanded', String(open));
+        });
+        document.getElementById('mainLayout').classList.toggle('settings-open',
+          !document.getElementById('settingsPanel').classList.contains('hidden'));
+      }
+      function setPanelOpen(panelId, open) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+        panel.classList.toggle('hidden', !open);
+        syncPanels();
+        if (open) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      function togglePanel(panelId) {
+        const panel = document.getElementById(panelId);
+        setPanelOpen(panelId, panel.classList.contains('hidden'));
+      }
+      function presetValues(pattern) {
+        const v = pattern.split('–').map(Number);
+        if (v.length === 2) return { mode: 2, durations: { inhale:v[0], holdIn:0, exhale:v[1], holdOut:0 }};
+        if (v.length === 3) return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:0 }};
+        return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:v[3] }};
+      }
+      function currentPattern() {
+        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
+        return keys.map(k => fmt(state.durations[k])).join('–');
+      }
+      function currentMatchesFavorite() {
+        const favorite = state.favorite;
+        if (!favorite || favorite.mode !== state.mode) return false;
+        return MODE_PHASES[state.mode].every(k => favorite.durations[k] === state.durations[k]);
+      }
+      function refreshFavoritePanel() {
+        const favorite = state.favorite;
+        const button = document.getElementById('favoriteOption');
+        if (!button) return;
+        const removeButton = document.getElementById('deleteFavoriteBtn');
+        const hint = document.getElementById('favoriteHint');
+        button.hidden = !favorite;
+        removeButton.hidden = !favorite;
+        if (!favorite) {
+          hint.textContent = 'Non hai ancora salvato un ritmo personale. Registralo in «Il mio ritmo», oppure usa il pulsante qui sotto per memorizzare i tempi attuali.';
+          return;
+        }
+        const keys = MODE_PHASES[favorite.mode];
+        const values = keys.map(k => favorite.durations[k]);
+        const seconds = values.reduce((sum, n) => sum + n, 0);
+        const pattern = values.map(fmt).join('–');
+        const rpm = (60 / seconds).toLocaleString('it-IT', { maximumFractionDigits: 2 });
+        document.getElementById('favoritePattern').textContent = pattern;
+        document.getElementById('favoriteRate').textContent = rpm + ' respiri/min';
+        button.setAttribute('aria-label', 'Usa il mio preferito: ' + pattern);
+        hint.textContent = 'Questo ritmo resta salvato tra una sessione e l’altra sullo stesso browser. Toccalo per usarlo, anche dopo aver provato altri ritmi.';
+      }
+      function saveCurrentAsFavorite() {
+        const favorite = favoriteFromCurrent();
+        if (!favorite) { showToast('Imposta almeno una fase diversa da zero.'); return; }
+        state.favorite = favorite;
+        refreshFavoritePanel();
+        updatePresetSelection();
+        const stored = saveSettings();
+        showToast(stored ? 'Ritmo personale memorizzato come preferito.' : 'Non è stato possibile memorizzare il preferito su questo browser.');
+      }
+      function applyFavorite() {
+        if (!state.favorite) return;
+        const favorite = normalizedFavorite(state.favorite);
+        if (!favorite) return;
+        resetSession(false);
+        state.mode = favorite.mode;
+        Object.assign(state.durations, favorite.durations);
+        state.selectedPhase = 'inhale';
+        renderAll();
+        saveSettings();
+        showToast('Il mio preferito impostato: premi Avvia.');
+        setPanelOpen('presetsPanel', false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      function deleteFavorite() {
+        state.favorite = null;
+        refreshFavoritePanel();
+        updatePresetSelection();
+        saveSettings();
+        showToast('Preferito eliminato. Il ritmo attuale non cambia.');
+      }
+      function updatePresetSelection() {
+        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
+        const seconds = keys.reduce((a,k) => a + state.durations[k], 0);
+        const rpm = seconds > 0 ? (60 / seconds).toLocaleString('it-IT', {maximumFractionDigits:2}) : '—';
+        document.getElementById('activeRhythm').innerHTML = 'Ritmo attuale: <strong></strong> · ' + rpm + ' respiri/min';
+        document.querySelector('#activeRhythm strong').textContent = currentPattern();
+        document.querySelectorAll('#presetGroups .preset-option').forEach(button => {
+          const vals = presetValues(button.dataset.pattern);
+          const match = vals.mode === state.mode &&
+            (state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'])
+              .every(k => vals.durations[k] === state.durations[k]);
+          button.classList.toggle('selected', match);
+          button.setAttribute('aria-pressed', String(match));
+          button.querySelector('.preset-choice').textContent = match ? '✓ Schema attivo' : '';
+        });
+        const favoriteButton = document.getElementById('favoriteOption');
+        if (favoriteButton) {
+          const match = currentMatchesFavorite();
+          favoriteButton.classList.toggle('selected', match);
+          favoriteButton.setAttribute('aria-pressed', String(match));
+          favoriteButton.querySelector('.preset-choice').textContent = match ? '✓ Il tuo preferito è attivo' : '';
+        }
+      }
+      function applyPreset(pattern) {
+        const values = presetValues(pattern);
+        resetSession(false);
+        state.mode = values.mode;
+        Object.assign(state.durations, values.durations);
+        state.selectedPhase = 'inhale';
+        renderAll();
+        saveSettings();
+        showToast('Ritmo ' + pattern + ' impostato: premi Avvia.');
+        setPanelOpen('presetsPanel', false);
+        window.scrollTo({ top:0, behavior:'smooth' });
+      }
+      function initPresets() {
+        const container = document.getElementById('presetGroups');
+        presetData.forEach((group, groupIndex) => {
+          const section = document.createElement('section');
+          section.className = 'preset-group';
+          const title = document.createElement('h3');
+          title.textContent = group.name;
+          title.id = 'preset-group-' + groupIndex;
+          section.setAttribute('aria-labelledby', title.id);
+          section.appendChild(title);
+          const note = document.createElement('p');
+          note.className = 'group-note';
+          note.textContent = group.note;
+          section.appendChild(note);
+          const list = document.createElement('div');
+          list.className = 'preset-list';
+          group.entries.forEach(([pattern,rpm,indication]) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'preset-option';
+            button.dataset.pattern = pattern;
+            button.setAttribute('aria-pressed','false');
+            button.setAttribute('aria-label','Seleziona ' + pattern + ': ' + indication);
+            const top = document.createElement('span');
+            top.className = 'preset-option-top';
+            const time = document.createElement('span');
+            time.className = 'preset-time'; time.textContent = pattern;
+            const rate = document.createElement('span');
+            rate.className = 'preset-rpm'; rate.textContent = rpm + ' respiri/min';
+            top.append(time, rate);
+            const desc = document.createElement('span');
+            desc.className = 'preset-desc'; desc.textContent = indication;
+            const chosen = document.createElement('span');
+            chosen.className = 'preset-choice'; chosen.setAttribute('aria-hidden','true');
+            button.append(top,desc,chosen);
+            button.addEventListener('click', () => applyPreset(pattern));
+            list.appendChild(button);
+          });
+          section.appendChild(list);
+          container.appendChild(section);
+        });
+        refreshFavoritePanel();
+        updatePresetSelection();
+      }
+
+      function toggleSettings() { togglePanel('settingsPanel'); }
+
+      function toggleTheme() {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        const hadCustom = Boolean(state.bgColor);
+        state.baseTheme = next;
+        state.bgColor = null;
+        applyTheme();
+        saveSettings();
+        if (hadCustom) showToast('Sfondo predefinito ripristinato.');
+      }
+
+      async function toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+          else await document.exitFullscreen();
+        } catch (_) {
+          showToast('Schermo intero non disponibile su questo browser.');
+        }
+      }
+
+      /* ---------- Eventi ---------- */
+      el.mode4Btn.addEventListener('click', () => setMode(4));
+      el.mode2Btn.addEventListener('click', () => setMode(2));
+      el.startBtn.addEventListener('click', startOrPause);
+      el.resetBtn.addEventListener('click', () => resetSession(true));
+      el.settingsBtn.addEventListener('click', toggleSettings);
+      el.closeSettingsBtn.addEventListener('click', () => setPanelOpen('settingsPanel',false));
+      document.getElementById('recordPanelBtn').addEventListener('click', () => togglePanel('recordCard'));
+      document.getElementById('closeRecordBtn').addEventListener('click', () => setPanelOpen('recordCard',false));
+      document.getElementById('presetsPanelBtn').addEventListener('click', () => togglePanel('presetsPanel'));
+      document.getElementById('closePresetsBtn').addEventListener('click', () => setPanelOpen('presetsPanel',false));
+      document.getElementById('favoriteOption').addEventListener('click', applyFavorite);
+      document.getElementById('saveFavoriteCurrentBtn').addEventListener('click', saveCurrentAsFavorite);
+      document.getElementById('deleteFavoriteBtn').addEventListener('click', deleteFavorite);
+      el.minusBtn.addEventListener('click', () => updateDuration(state.durations[state.selectedPhase] - .5));
+      el.plusBtn.addEventListener('click', () => updateDuration(state.durations[state.selectedPhase] + .5));
+      el.timeInput.addEventListener('change', e => updateDuration(e.target.value));
+      el.timeRange.addEventListener('input', e => updateDuration(e.target.value));
+      document.querySelectorAll('.quick-presets button').forEach(btn => {
+        btn.addEventListener('click', () => updateDuration(btn.dataset.value));
+      });
+      el.soundToggle.addEventListener('click', async () => {
+        state.sound = !state.sound;
+        if (state.sound) {
+          await ensureAudio();
+          playPhaseSound(state.selectedPhase);
+        }
+        renderSound();
+        saveSettings();
+      });
+      el.volumeRange.addEventListener('input', e => {
+        state.volume = Number(e.target.value) / 100;
+        renderSound();
+        saveSettings();
+      });
+      el.volumeRange.addEventListener('change', () => {
+        if (state.sound) playStoredSound(state.selectedPhase);
+      });
+      el.testSoundsBtn.addEventListener('click', testAllSounds);
+      el.sessionMinutesInput.addEventListener('change', e => updateSessionMinutes(e.target.value));
+      document.querySelectorAll('[data-session-minutes]').forEach(btn => {
+        btn.addEventListener('click', () => updateSessionMinutes(btn.dataset.sessionMinutes));
+      });
+      el.bgCustom.addEventListener('input', e => setBackground(e.target.value));
+      el.bgResetBtn.addEventListener('click', () => {
+        setBackground(null);
+        showToast('Sfondo predefinito ripristinato.');
+      });
+      el.themeBtn.addEventListener('click', toggleTheme);
+      el.fullscreenBtn.addEventListener('click', toggleFullscreen);
+      ['pause', 'ended', 'stalled', 'error'].forEach(eventName => {
+        el.awakeVideo.addEventListener(eventName, () => {
+          state.wakeFallbackActive = false;
+          updateWakeStatus();
+          if (state.running && !state.paused && document.visibilityState === 'visible') {
+            setTimeout(activateAwakeFallback, 180);
+          }
+        });
+      });
+      el.awakeVideo.addEventListener('playing', () => {
+        state.wakeFallbackActive = true;
+        updateWakeStatus();
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && state.running && !state.paused) {
+          requestWakeLock();
+        }
+      });
+      window.addEventListener('focus', () => {
+        if (state.running && !state.paused) requestWakeLock();
+      });
+      window.addEventListener('pagehide', releaseWakeLock);
+      window.addEventListener('beforeunload', () => state.audioUrls.forEach(url => URL.revokeObjectURL(url)));
+      window.addEventListener('keydown', e => {
+        if (e.code === 'Space' && !['INPUT', 'BUTTON'].includes(document.activeElement.tagName)) {
+          e.preventDefault();
+          startOrPause();
+        }
+        if (e.key === 'Escape' && !document.fullscreenElement) { panelSpec.forEach(x => setPanelOpen(x.panel,false)); }
+      });
+
+
+      /* ---------- Registrazione del ritmo ideale ---------- */
+      const REC_KEYS = ['inhale', 'holdIn', 'exhale', 'holdOut'];
+      const REC_TEXT = {
+        inhale:  ['Inspira', 'Tocca quando hai finito di inspirare.'],
+        holdIn:  ['Trattieni', 'Tocca quando hai finito di trattenere.'],
+        exhale:  ['Espira', 'Tocca quando hai finito di espirare.'],
+        holdOut: ['Trattieni a vuoto', 'Tocca quando hai finito di trattenere.']
+      };
+      // idx: fase in corso (-1 = non ancora iniziato); durs: durate misurate; 0 = fase saltata.
+      const rec = { active: false, idx: -1, start: 0, lastInput: 0, durs: [], openedAt: 0, raf: 0, values: null };
+      const rEl = {
+        overlay: document.getElementById('recOverlay'),
+        orb: document.getElementById('recOrb'),
+        dots: Array.from(document.querySelectorAll('#recDots span')),
+        eyebrow: document.getElementById('recEyebrow'),
+        phase: document.getElementById('recPhase'),
+        timer: document.getElementById('recTimer'),
+        hint: document.getElementById('recHint'),
+        skip: document.getElementById('recSkip'),
+        startBtn: document.getElementById('recStartBtn'),
+        cancelBtn: document.getElementById('recCancel'),
+        result: document.getElementById('recResult'),
+        values: document.getElementById('recValues'),
+        applyBtn: document.getElementById('recApplyBtn'),
+        retryBtn: document.getElementById('recRetryBtn')
+      };
+
+      function recRender() {
+        const n = rec.idx;
+        rEl.skip.classList.toggle('hidden', n < 0);
+        if (n < 0) {
+          rEl.eyebrow.textContent = 'Registrazione';
+          rEl.phase.textContent = 'Pronto?';
+          rEl.phase.style.color = 'var(--text)';
+          rEl.timer.innerHTML = '&nbsp;';
+          rEl.hint.textContent = 'Tocca lo schermo in un punto qualsiasi quando inizi a inspirare.';
+          rEl.overlay.style.setProperty('--pc', 'var(--c-inhale)');
+          rEl.orb.className = 'rec-orb';
+        } else {
+          const key = REC_KEYS[n];
+          rEl.eyebrow.textContent = `Fase ${n + 1} di 4`;
+          rEl.phase.textContent = REC_TEXT[key][0];
+          rEl.phase.style.color = '';
+          rEl.hint.textContent = REC_TEXT[key][1];
+          rEl.overlay.style.setProperty('--pc', `var(--c-${key})`);
+          rEl.orb.className = 'rec-orb' + (key === 'inhale' || key === 'holdIn' ? ' grow' : key === 'exhale' ? ' shrink' : '');
+        }
+        rEl.dots.forEach((dot, i) => {
+          dot.style.setProperty('--c-dot', `var(--c-${REC_KEYS[i]})`);
+          dot.className = i < n ? 'done' : (i === n ? 'active' : '');
+        });
+      }
+
+      function recLoop() {
+        if (!rec.active) return;
+        if (rec.idx >= 0) {
+          const secs = (performance.now() - rec.start) / 1000;
+          rEl.timer.textContent = `${fmt(Math.round(secs * 10) / 10)} s`;
+        }
+        rec.raf = requestAnimationFrame(recLoop);
+      }
+
+      function recOpen() {
+        if (state.running && !state.paused) startOrPause();
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        rec.active = true;
+        rec.idx = -1;
+        rec.durs = [];
+        rec.openedAt = performance.now();
+        rec.lastInput = 0;
+        rEl.overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        recRender();
+        cancelAnimationFrame(rec.raf);
+        rec.raf = requestAnimationFrame(recLoop);
+      }
+
+      function recClose() {
+        rec.active = false;
+        cancelAnimationFrame(rec.raf);
+        rEl.overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      function recFinish() {
+        const values = {};
+        REC_KEYS.forEach((key, i) => {
+          const secs = rec.durs[i];
+          values[key] = secs === 0 ? 0 : clamp(roundHalf(Math.max(secs, .5)), .5, 30);
+        });
+        if (!REC_KEYS.some(k => values[k] > 0)) values.inhale = .5;
+        rec.values = values;
+        recClose();
+        rEl.values.innerHTML = '';
+        REC_KEYS.forEach((key, i) => {
+          const box = document.createElement('div');
+          box.className = 'rv';
+          box.style.setProperty('--chip', `var(--c-${key})`);
+          const note = rec.durs[i] === 0 ? 'saltata' : `misurato: ${fmt(Math.round(rec.durs[i] * 10) / 10)} s`;
+          box.innerHTML = `<small>${PHASES[key].short}${key === 'holdOut' ? ' a vuoto' : ''}</small><strong>${fmt(values[key])} s</strong><em>${note}</em>`;
+          rEl.values.appendChild(box);
+        });
+        rEl.result.classList.remove('hidden');
+        rEl.result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Chiude la fase in corso con la durata data e passa alla successiva.
+      function recAdvance(now, duration) {
+        rec.durs[rec.idx] = duration;
+        rec.lastInput = now;
+        if ('vibrate' in navigator) { try { navigator.vibrate(25); } catch (_) {} }
+        if (rec.idx >= REC_KEYS.length - 1) { recFinish(); return; }
+        rec.idx += 1;
+        rec.start = now;
+        recRender();
+      }
+
+      function recTap(e) {
+        if (!rec.active) return;
+        if (e.target && e.target.closest && e.target.closest('button')) return;
+        const now = performance.now();
+        if (now - rec.openedAt < 500) return;
+        if (rec.lastInput && now - rec.lastInput < 300) return;
+        if (e.cancelable) e.preventDefault();
+        if (rec.idx < 0) {
+          rec.idx = 0;
+          rec.start = now;
+          rec.lastInput = now;
+          if ('vibrate' in navigator) { try { navigator.vibrate(25); } catch (_) {} }
+          recRender();
+        } else {
+          recAdvance(now, (now - rec.start) / 1000);
+        }
+      }
+
+      function recSkip() {
+        if (!rec.active || rec.idx < 0) return;
+        recAdvance(performance.now(), 0);
+      }
+
+      function recApply() {
+        if (!rec.values) return;
+        if (state.mode !== 4) setMode(4);
+        else if (state.running) resetSession(false);
+        REC_KEYS.forEach(key => { state.durations[key] = rec.values[key]; });
+        state.selectedPhase = 'inhale';
+        state.favorite = favoriteFromCurrent();
+        refreshFavoritePanel();
+        renderAll();
+        const stored = saveSettings();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast(stored ? 'Il mio preferito salvato: premi Avvia per provarlo.' : 'Ritmo applicato, ma questo browser non consente di salvarlo.');
+      }
+
+      rEl.startBtn.addEventListener('click', recOpen);
+      rEl.retryBtn.addEventListener('click', recOpen);
+      rEl.applyBtn.addEventListener('click', recApply);
+      rEl.cancelBtn.addEventListener('click', recClose);
+      rEl.skip.addEventListener('click', recSkip);
+      rEl.overlay.addEventListener('pointerdown', recTap);
+      window.addEventListener('keydown', e => {
+        if (!rec.active) return;
+        if (e.code === 'Escape') { e.stopImmediatePropagation(); recClose(); return; }
+        if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) recTap({ target: null, cancelable: false }); }
+      }, true);
+
+      loadSettings();
+      initPresets();
+      syncPanels();
+      initBgSwatches();
+      applyTheme();
+      initAudioElements();
+      renderAll();
+    })();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .catch(error => console.warn('Cache offline non disponibile:',error));
+      });
+    }
+    (() => {
+      const installButton = document.getElementById('installAppBtn');
+      let installPrompt = null;
+      window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        installPrompt = event;
+        installButton.hidden = false;
+      });
+      installButton.addEventListener('click', async () => {
+        if (!installPrompt) return;
+        const prompt = installPrompt;
+        installPrompt = null;
+        installButton.hidden = true;
+        try { await prompt.prompt(); await prompt.userChoice; }
+        catch (error) { console.warn('Installazione non disponibile:',error); }
+      });
+      window.addEventListener('appinstalled', () => {
+        installPrompt = null;
+        installButton.hidden = true;
+      });
+    })();
+  </script>
+</body>
+</html>
