@@ -138,33 +138,6 @@
     .main-card { padding: clamp(18px, 3vw, 30px); }
     .settings-card { padding: 20px; position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
 
-    .mode-switch {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-      padding: 5px;
-      background: var(--panel-2);
-      border-radius: 17px;
-      margin-bottom: 14px;
-    }
-
-    .mode-switch button {
-      border: 0;
-      border-radius: 13px;
-      padding: 11px 12px;
-      color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      font-weight: 750;
-      transition: .2s ease;
-    }
-
-    .mode-switch button.active {
-      background: var(--panel);
-      color: var(--accent);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
-    }
-
     /* ---------- Stage: orb + anello progressivo ---------- */
     .stage {
       position: relative;
@@ -873,11 +846,6 @@
   <main class="app" aria-label="Respirazione guidata">
     <section class="layout" id="mainLayout">
       <div class="card main-card">
-        <div class="mode-switch" role="group" aria-label="Modalità di respirazione">
-          <button id="mode4Btn" class="active" type="button">4 tempi</button>
-          <button id="mode2Btn" type="button">2 tempi</button>
-        </div>
-
         <div class="stage" role="img" aria-label="Cerchio animato della respirazione">
           <svg id="breathRing" viewBox="0 0 480 480">
             <defs>
@@ -1112,9 +1080,9 @@
         holdOut: { label: 'Pausa finale', short: 'Trattieni', className: 'phase-holdOut', default: 4 }
       };
 
+      // Una sola modalità: quattro fasi configurabili. Imposta le pause a 0 per due tempi.
       const MODE_PHASES = {
-        4: ['inhale', 'holdIn', 'exhale', 'holdOut'],
-        2: ['inhale', 'exhale']
+        4: ['inhale', 'holdIn', 'exhale', 'holdOut']
       };
 
       const BG_PRESETS = [
@@ -1184,8 +1152,6 @@
       };
 
       const el = {
-        mode4Btn: document.getElementById('mode4Btn'),
-        mode2Btn: document.getElementById('mode2Btn'),
         phaseName: document.getElementById('phaseName'),
         countdown: document.getElementById('countdown'),
         ringBase: document.getElementById('ringBase'),
@@ -1267,8 +1233,13 @@
           if (!Number.isFinite(n) || n < 0 || n > 30) return null;
           durations[key] = clamp(roundHalf(n), 0, 30);
         }
-        if (!runKeysFor(durations, value.mode).length) return null;
-        return { mode: value.mode, durations };
+        // Migrazione di preferiti precedenti salvati in modalità a 2 tempi.
+        if (value.mode === 2) {
+          durations.holdIn = 0;
+          durations.holdOut = 0;
+        }
+        if (!runKeysFor(durations, 4).length) return null;
+        return { mode: 4, durations };
       }
       function favoriteFromCurrent() {
         return normalizedFavorite({ mode: state.mode, durations: { ...state.durations } });
@@ -1281,7 +1252,7 @@
             sound: state.sound,
             volume: state.volume,
             sessionMinutes: state.sessionMinutes,
-            settingsVersion: 5,
+            settingsVersion: 6,
             theme: state.baseTheme,
             bgColor: state.bgColor,
             favorite: state.favorite
@@ -1298,16 +1269,19 @@
         try {
           const saved = JSON.parse(localStorage.getItem('breathGuideSettings'));
           if (!saved) return;
-          if (saved.mode === 2 || saved.mode === 4) state.mode = saved.mode;
+          // Le impostazioni vecchie a 2 tempi sono convertite in quattro fasi, con pause a zero.
+          state.mode = 4;
           if (saved.durations) {
             for (const key of Object.keys(PHASES)) {
               const n = Number(saved.durations[key]);
               if (Number.isFinite(n)) state.durations[key] = clamp(roundHalf(n), 0, 30);
             }
           }
-          [2, 4].forEach(m => {
-            if (!MODE_PHASES[m].some(k => state.durations[k] > 0)) state.durations[MODE_PHASES[m][0]] = 4;
-          });
+          if (saved.mode === 2) {
+            state.durations.holdIn = 0;
+            state.durations.holdOut = 0;
+          }
+          if (!runKeys().length) state.durations.inhale = 4;
           state.sound = Boolean(saved.sound);
           if (Number.isFinite(saved.volume)) state.volume = clamp(saved.volume, 0, 1);
           // Migrazione: le versioni precedenti usavano segnali molto deboli.
@@ -1376,27 +1350,7 @@
         el.bgCustom.value = state.bgColor || DEFAULT_BG[document.documentElement.dataset.theme] || '#0b1120';
       }
 
-      /* ---------- Modalità e impostazioni tempi ---------- */
-      function setMode(mode) {
-        if (state.mode === mode) return;
-        resetSession(false);
-        state.mode = mode;
-        if (!runKeys().length) {
-          state.durations[MODE_PHASES[mode][0]] = 4;
-          showToast('In questa modalità tutte le fasi erano a zero: inspirazione impostata a 4 s.');
-        }
-        if (!currentPhaseKeys().includes(state.selectedPhase)) state.selectedPhase = 'inhale';
-        renderAll();
-        saveSettings();
-      }
-
-      function renderMode() {
-        el.mode4Btn.classList.toggle('active', state.mode === 4);
-        el.mode2Btn.classList.toggle('active', state.mode === 2);
-        el.mode4Btn.setAttribute('aria-pressed', String(state.mode === 4));
-        el.mode2Btn.setAttribute('aria-pressed', String(state.mode === 2));
-      }
-
+      /* ---------- Impostazioni tempi ---------- */
       function renderPhaseTabs() {
         el.phaseTabs.innerHTML = '';
         const keys = currentPhaseKeys();
@@ -1650,7 +1604,6 @@
       }
 
       function renderAll() {
-        renderMode();
         renderPhaseTabs();
         renderEditor();
         renderGraph();
@@ -2134,13 +2087,21 @@
       }
       function presetValues(pattern) {
         const v = pattern.split('–').map(Number);
-        if (v.length === 2) return { mode: 2, durations: { inhale:v[0], holdIn:0, exhale:v[1], holdOut:0 }};
+        if (v.length === 2) return { mode: 4, durations: { inhale:v[0], holdIn:0, exhale:v[1], holdOut:0 }};
         if (v.length === 3) return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:0 }};
         return { mode: 4, durations: { inhale:v[0], holdIn:v[1], exhale:v[2], holdOut:v[3] }};
       }
+      // Mostra 2, 3 o 4 numeri in base alle pause non utilizzate.
+      function patternForDurations(durations) {
+        const keys = durations.holdIn === 0 && durations.holdOut === 0
+          ? ['inhale', 'exhale']
+          : durations.holdOut === 0
+            ? ['inhale', 'holdIn', 'exhale']
+            : MODE_PHASES[4];
+        return keys.map(k => fmt(durations[k])).join('–');
+      }
       function currentPattern() {
-        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
-        return keys.map(k => fmt(state.durations[k])).join('–');
+        return patternForDurations(state.durations);
       }
       function currentMatchesFavorite() {
         const favorite = state.favorite;
@@ -2159,10 +2120,8 @@
           hint.textContent = 'Non hai ancora salvato un ritmo personale. Registralo in «Il mio ritmo», oppure usa il pulsante qui sotto per memorizzare i tempi attuali.';
           return;
         }
-        const keys = MODE_PHASES[favorite.mode];
-        const values = keys.map(k => favorite.durations[k]);
-        const seconds = values.reduce((sum, n) => sum + n, 0);
-        const pattern = values.map(fmt).join('–');
+        const seconds = MODE_PHASES[4].reduce((sum, key) => sum + favorite.durations[key], 0);
+        const pattern = patternForDurations(favorite.durations);
         const rpm = (60 / seconds).toLocaleString('it-IT', { maximumFractionDigits: 2 });
         document.getElementById('favoritePattern').textContent = pattern;
         document.getElementById('favoriteRate').textContent = rpm + ' respiri/min';
@@ -2200,16 +2159,13 @@
         showToast('Preferito eliminato. Il ritmo attuale non cambia.');
       }
       function updatePresetSelection() {
-        const keys = state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'];
-        const seconds = keys.reduce((a,k) => a + state.durations[k], 0);
+        const seconds = MODE_PHASES[4].reduce((a,k) => a + state.durations[k], 0);
         const rpm = seconds > 0 ? (60 / seconds).toLocaleString('it-IT', {maximumFractionDigits:2}) : '—';
         document.getElementById('activeRhythm').innerHTML = 'Ritmo attuale: <strong></strong> · ' + rpm + ' respiri/min';
         document.querySelector('#activeRhythm strong').textContent = currentPattern();
         document.querySelectorAll('#presetGroups .preset-option').forEach(button => {
           const vals = presetValues(button.dataset.pattern);
-          const match = vals.mode === state.mode &&
-            (state.mode === 2 ? ['inhale','exhale'] : ['inhale','holdIn','exhale','holdOut'])
-              .every(k => vals.durations[k] === state.durations[k]);
+          const match = MODE_PHASES[4].every(k => vals.durations[k] === state.durations[k]);
           button.classList.toggle('selected', match);
           button.setAttribute('aria-pressed', String(match));
           button.querySelector('.preset-choice').textContent = match ? '✓ Schema attivo' : '';
@@ -2305,8 +2261,6 @@
       }
 
       /* ---------- Eventi ---------- */
-      el.mode4Btn.addEventListener('click', () => setMode(4));
-      el.mode2Btn.addEventListener('click', () => setMode(2));
       el.startBtn.addEventListener('click', () => {
         if (!state.running || state.paused) enterFullscreenWhenStarting();
         startOrPause();
@@ -2530,8 +2484,7 @@
 
       function recApply() {
         if (!rec.values) return;
-        if (state.mode !== 4) setMode(4);
-        else if (state.running) resetSession(false);
+        if (state.running) resetSession(false);
         REC_KEYS.forEach(key => { state.durations[key] = rec.values[key]; });
         state.selectedPhase = 'inhale';
         state.favorite = favoriteFromCurrent();
