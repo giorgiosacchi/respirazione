@@ -98,47 +98,8 @@
       z-index: 1;
       width: min(1120px, 100%);
       margin: 0 auto;
-      padding: max(18px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
+      padding: max(10px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom));
     }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .brand { display: flex; align-items: center; gap: 14px; }
-
-    .logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      flex: 0 0 auto;
-      background:
-        radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pc) 30%, #fff), var(--pc) 70%);
-      box-shadow: 0 0 0 6px color-mix(in srgb, var(--pc) 18%, transparent), 0 8px 26px color-mix(in srgb, var(--pc) 45%, transparent);
-      animation: logoBreath 6s ease-in-out infinite;
-    }
-
-    @keyframes logoBreath {
-      0%, 100% { transform: scale(.88); }
-      50% { transform: scale(1); }
-    }
-
-    .brand h1 {
-      font-size: clamp(1.45rem, 2.7vw, 2.15rem);
-      line-height: 1.1;
-      margin: 0;
-      letter-spacing: -.035em;
-      background: linear-gradient(90deg, var(--text) 30%, var(--pc));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .brand p { margin: 5px 0 0; color: var(--muted); font-size: .95rem; }
 
     .icon-row { display: flex; gap: 8px; }
 
@@ -449,6 +410,7 @@
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 14px;
+      flex-wrap: wrap;
     }
     .settings-head h2 { margin: 0; font-size: 1.12rem; }
 
@@ -803,9 +765,6 @@
 
     @media (max-width: 520px) {
       .app { padding-left: 12px; padding-right: 12px; }
-      .topbar { align-items: flex-start; }
-      .brand p { font-size: .84rem; }
-      .logo { width: 38px; height: 38px; }
       .main-card, .settings-card { border-radius: 22px; }
       .main-card { padding: 15px; }
       .controls { grid-template-columns: 1fr 1fr; }
@@ -911,21 +870,7 @@
   </style>
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>Respirazione guidata</h1>
-        </div>
-      </div>
-      <div class="icon-row">
-        <button class="icon-btn" id="installAppBtn" type="button" hidden aria-label="Installa applicazione" title="Installa applicazione">⬇</button>
-        <button class="icon-btn" id="fullscreenBtn" type="button" aria-label="Schermo intero" title="Schermo intero">⛶</button>
-        <button class="icon-btn" id="themeBtn" type="button" aria-label="Cambia tema" title="Tema chiaro o scuro">◐</button>
-      </div>
-    </header>
-
+  <main class="app" aria-label="Respirazione guidata">
     <section class="layout" id="mainLayout">
       <div class="card main-card">
         <div class="mode-switch" role="group" aria-label="Modalità di respirazione">
@@ -989,7 +934,11 @@
       <aside class="card settings-card hidden" id="settingsPanel" aria-label="Tempi e durata">
         <div class="settings-head">
           <h2>Definizione dei tempi</h2>
-          <button class="icon-btn" id="closeSettingsBtn" type="button" aria-label="Nascondi impostazioni" title="Nascondi">×</button>
+          <div class="icon-row">
+            <button class="icon-btn" id="installAppBtn" type="button" hidden aria-label="Installa applicazione" title="Installa applicazione">⬇</button>
+            <button class="icon-btn" id="themeBtn" type="button" aria-label="Cambia tema" title="Tema chiaro o scuro">◐</button>
+            <button class="icon-btn" id="closeSettingsBtn" type="button" aria-label="Nascondi impostazioni" title="Nascondi">×</button>
+          </div>
         </div>
 
         <div class="phase-tabs" id="phaseTabs" aria-label="Scegli la fase da modificare"></div>
@@ -1270,7 +1219,6 @@
         audioStatus: document.getElementById('audioStatus'),
         wakeHint: document.getElementById('wakeHint'),
         themeBtn: document.getElementById('themeBtn'),
-        fullscreenBtn: document.getElementById('fullscreenBtn'),
         awakeVideo: document.getElementById('awakeVideo'),
         toast: document.getElementById('toast'),
         bgSwatches: document.getElementById('bgSwatches'),
@@ -2343,19 +2291,26 @@
         if (hadCustom) showToast('Sfondo predefinito ripristinato.');
       }
 
-      async function toggleFullscreen() {
+      // Sulla PWA installata il manifest imposta lo schermo intero fin dall'apertura.
+      // In Chrome normale il fullscreen richiede un gesto dell'utente: lo richiediamo
+      // automaticamente al primo tocco su Avvia/Riprendi, senza un pulsante apposito.
+      function enterFullscreenWhenStarting() {
+        if (document.fullscreenElement) return;
+        if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) return;
+        if (typeof document.documentElement.requestFullscreen !== 'function') return;
         try {
-          if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
-          else await document.exitFullscreen();
-        } catch (_) {
-          showToast('Schermo intero non disponibile su questo browser.');
-        }
+          const request = document.documentElement.requestFullscreen();
+          if (request && typeof request.catch === 'function') request.catch(() => {});
+        } catch (_) { /* Su alcuni browser Android il fullscreen non è supportato. */ }
       }
 
       /* ---------- Eventi ---------- */
       el.mode4Btn.addEventListener('click', () => setMode(4));
       el.mode2Btn.addEventListener('click', () => setMode(2));
-      el.startBtn.addEventListener('click', startOrPause);
+      el.startBtn.addEventListener('click', () => {
+        if (!state.running || state.paused) enterFullscreenWhenStarting();
+        startOrPause();
+      });
       el.resetBtn.addEventListener('click', () => resetSession(true));
       el.settingsBtn.addEventListener('click', toggleSettings);
       el.closeSettingsBtn.addEventListener('click', () => setPanelOpen('settingsPanel',false));
@@ -2401,7 +2356,6 @@
         showToast('Sfondo predefinito ripristinato.');
       });
       el.themeBtn.addEventListener('click', toggleTheme);
-      el.fullscreenBtn.addEventListener('click', toggleFullscreen);
       ['pause', 'ended', 'stalled', 'error'].forEach(eventName => {
         el.awakeVideo.addEventListener(eventName, () => {
           state.wakeFallbackActive = false;

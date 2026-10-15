@@ -1,5 +1,5 @@
 /* Respirazione guidata: cache locale per uso senza connessione. */
-const CACHE = 'respirazione-offline-v2';
+const CACHE = 'respirazione-offline-v3';
 const BASE = self.registration.scope;
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png']
   .map(path => new URL(path, BASE).href);
