@@ -489,7 +489,7 @@
       font-size: .84rem;
     }
 
-    .session-box, .sound-box, .bg-box {
+    .session-box, .sound-box, .bg-box, .music-box {
       margin-top: 16px;
       border-top: 1px solid var(--border);
       padding-top: 16px;
@@ -964,6 +964,21 @@
           <p class="session-hint" id="wakeHint">Il programma prova sia il blocco ufficiale sia una riproduzione video continua. Un file aperto dalla cartella Download non può però imporre a MagicOS di ignorare sempre il time-out.</p>
         </div>
 
+        <div class="music-box">
+          <div class="switch-line">
+            <div class="switch-copy">
+              <strong>Musica di sottofondo</strong>
+              <span>La musica accompagna l’esercizio, riparte automaticamente se termina e si arresta con la sessione.</span>
+            </div>
+            <button class="toggle" id="musicToggle" type="button" role="switch" aria-checked="false" aria-label="Attiva musica di sottofondo"></button>
+          </div>
+          <div class="volume-row">
+            <label for="musicVolumeRange"><span>Volume musica</span><span id="musicVolumeValue">45%</span></label>
+            <input id="musicVolumeRange" type="range" min="0" max="100" value="45" aria-label="Volume della musica" />
+          </div>
+          <p class="session-hint" id="musicStatus">Musica disattivata per impostazione predefinita.</p>
+        </div>
+
         <div class="sound-box">
           <div class="switch-line">
             <div class="switch-copy">
@@ -1042,6 +1057,38 @@
       <p class="preset-caution">Indicazioni orientative di benessere, non prescrizioni mediche. Non forzare il ritmo e interrompi in caso di affanno, capogiri o disagio; i ritmi con pause prolungate non sono adatti a tutti.</p>
     </section>
   </main>
+
+  <audio id="backgroundMusic" preload="none" loop playsinline hidden></audio>
+  <script src="./music/part-01.js"></script>
+  <script src="./music/part-02.js"></script>
+  <script src="./music/part-03.js"></script>
+  <script src="./music/part-04.js"></script>
+  <script src="./music/part-05.js"></script>
+  <script src="./music/part-06.js"></script>
+  <script src="./music/part-07.js"></script>
+  <script src="./music/part-08.js"></script>
+  <script src="./music/part-09.js"></script>
+  <script src="./music/part-10.js"></script>
+  <script src="./music/part-11.js"></script>
+  <script src="./music/part-12.js"></script>
+  <script src="./music/part-13.js"></script>
+  <script src="./music/part-14.js"></script>
+  <script src="./music/part-15.js"></script>
+  <script src="./music/part-16.js"></script>
+  <script src="./music/part-17.js"></script>
+  <script>
+    // La stessa traccia originale è distribuita in piccole risorse
+    // per la pubblicazione su GitHub Pages e la cache PWA offline.
+    (() => {
+      const chunks = window.__respMusicChunks;
+      if (!Array.isArray(chunks) || chunks.length !== 17 || chunks.some(part => typeof part !== 'string')) {
+        console.error('Una o più parti della musica non sono state caricate.');
+        return;
+      }
+      document.getElementById('backgroundMusic').src = 'data:audio/mpeg;base64,' + chunks.join('');
+      delete window.__respMusicChunks;
+    })();
+  </script>
 
   <video id="awakeVideo" class="awake-video" muted loop playsinline preload="auto" aria-hidden="true">
     <source src="data:video/mp4;base64,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" type="video/mp4">
@@ -1125,8 +1172,10 @@
         phaseStartedAt: 0,
         phaseElapsedBeforePause: 0,
         cycles: 0,
-        sound: false,
+        sound: true,
         volume: 0.85,
+        music: false,
+        musicVolume: 0.45,
         sessionMinutes: 10,
         sessionStartedAt: 0,
         sessionElapsedBeforePause: 0,
@@ -1172,6 +1221,11 @@
         plusBtn: document.getElementById('plusBtn'),
         timeInput: document.getElementById('timeInput'),
         timeRange: document.getElementById('timeRange'),
+        musicToggle: document.getElementById('musicToggle'),
+        musicVolumeRange: document.getElementById('musicVolumeRange'),
+        musicVolumeValue: document.getElementById('musicVolumeValue'),
+        musicStatus: document.getElementById('musicStatus'),
+        backgroundMusic: document.getElementById('backgroundMusic'),
         soundToggle: document.getElementById('soundToggle'),
         volumeRange: document.getElementById('volumeRange'),
         volumeValue: document.getElementById('volumeValue'),
@@ -1251,6 +1305,8 @@
             durations: state.durations,
             sound: state.sound,
             volume: state.volume,
+            music: state.music,
+            musicVolume: state.musicVolume,
             sessionMinutes: state.sessionMinutes,
             settingsVersion: 6,
             theme: state.baseTheme,
@@ -1282,7 +1338,9 @@
             state.durations.holdOut = 0;
           }
           if (!runKeys().length) state.durations.inhale = 4;
-          state.sound = Boolean(saved.sound);
+          if (typeof saved.sound === 'boolean') state.sound = saved.sound;
+          if (typeof saved.music === 'boolean') state.music = saved.music;
+          if (Number.isFinite(saved.musicVolume)) state.musicVolume = clamp(saved.musicVolume, 0, 1);
           if (Number.isFinite(saved.volume)) state.volume = clamp(saved.volume, 0, 1);
           // Migrazione: le versioni precedenti usavano segnali molto deboli.
           if (!saved.settingsVersion || saved.settingsVersion < 4) state.volume = Math.max(state.volume, .90);
@@ -1510,6 +1568,47 @@
         });
       }
 
+      /* ---------- Musica di sottofondo: volume e trasporto separati dai segnali ---------- */
+      function renderMusic() {
+        el.musicToggle.classList.toggle('on', state.music);
+        el.musicToggle.setAttribute('aria-checked', String(state.music));
+        el.musicVolumeRange.value = Math.round(state.musicVolume * 100);
+        el.musicVolumeValue.textContent = `${Math.round(state.musicVolume * 100)}%`;
+        el.backgroundMusic.volume = state.musicVolume;
+        el.musicStatus.textContent = state.music
+          ? 'Attiva: segue avvio, pausa, ripresa e fine dell’esercizio.'
+          : 'Musica disattivata per impostazione predefinita.';
+        el.musicStatus.style.color = '';
+      }
+
+      function pauseMusic(rewind = false) {
+        el.backgroundMusic.pause();
+        if (rewind) {
+          try { el.backgroundMusic.currentTime = 0; } catch (_) {}
+        }
+      }
+
+      function playMusic() {
+        if (!state.music || !state.running || state.paused) return;
+        el.backgroundMusic.volume = state.musicVolume;
+        // HTMLAudioElement.loop riavvia il brano senza interrompere l'esercizio.
+        // La chiamata avviene nel gesto di Avvia/Riprendi, richiesto su Android.
+        try {
+          const promise = el.backgroundMusic.play();
+          if (promise && typeof promise.catch === 'function') {
+            promise.catch(error => {
+              if (state.music && state.running && !state.paused) {
+                el.musicStatus.textContent = 'Riproduzione non consentita dal browser: ' + (error?.message || 'controlla il volume multimediale');
+                el.musicStatus.style.color = 'var(--danger)';
+              }
+            });
+          }
+        } catch (error) {
+          el.musicStatus.textContent = 'Impossibile avviare la musica: ' + (error?.message || 'errore audio');
+          el.musicStatus.style.color = 'var(--danger)';
+        }
+      }
+
       /* ---------- Rendering generale ---------- */
       function renderSound() {
         el.soundToggle.classList.toggle('on', state.sound);
@@ -1608,6 +1707,7 @@
         renderEditor();
         renderGraph();
         renderSound();
+        renderMusic();
         renderSessionSettings();
         renderStatus();
         if (!state.running) setReadyReadout();
@@ -1904,6 +2004,7 @@
         state.running = false;
         state.paused = false;
         state.sessionCompleted = true;
+        pauseMusic(true);
         cancelAnimationFrame(state.animationId);
         clearSessionEndTimer();
         await releaseWakeLock();
@@ -1951,6 +2052,7 @@
           state.sessionStartedAt = performance.now();
           el.startBtn.textContent = 'Pausa';
           renderGraph();
+          playMusic();
 
           // Queste chiamate partono direttamente dal tocco dell'utente: è essenziale su Android.
           const videoPromise = activateAwakeFallback();
@@ -1971,6 +2073,7 @@
           state.phaseElapsedBeforePause = (pauseNow - state.phaseStartedAt) / 1000;
           state.sessionElapsedBeforePause = Math.max(0, (pauseNow - state.sessionStartedAt) / 1000);
           state.paused = true;
+          pauseMusic();
           cancelAnimationFrame(state.animationId);
           clearSessionEndTimer();
           el.startBtn.textContent = 'Riprendi';
@@ -1981,6 +2084,7 @@
           state.paused = false;
           state.sessionStartedAt = performance.now() - state.sessionElapsedBeforePause * 1000;
           el.startBtn.textContent = 'Pausa';
+          playMusic();
           const videoPromise = activateAwakeFallback();
           const audioPromise = state.sound ? ensureAudio() : Promise.resolve();
           requestWakeLock();
@@ -2039,6 +2143,7 @@
       }
 
       function resetSession(showMessage = true) {
+        pauseMusic(true);
         state.running = false;
         state.paused = false;
         state.phaseIndex = 0;
@@ -2281,6 +2386,22 @@
       el.timeRange.addEventListener('input', e => updateDuration(e.target.value));
       document.querySelectorAll('.quick-presets button').forEach(btn => {
         btn.addEventListener('click', () => updateDuration(btn.dataset.value));
+      });
+      el.musicToggle.addEventListener('click', () => {
+        state.music = !state.music;
+        if (state.music) {
+          playMusic();
+        } else {
+          pauseMusic(true);
+        }
+        renderMusic();
+        saveSettings();
+      });
+      el.musicVolumeRange.addEventListener('input', e => {
+        state.musicVolume = Number(e.target.value) / 100;
+        el.backgroundMusic.volume = state.musicVolume;
+        renderMusic();
+        saveSettings();
       });
       el.soundToggle.addEventListener('click', async () => {
         state.sound = !state.sound;
