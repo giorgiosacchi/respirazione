@@ -47,8 +47,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create android-v1.0.0-20261116 Respirazione-Android.apk \
+          gh release create android-v1.1.0-20261116 Respirazione-Android.apk \
             --target "$GITHUB_SHA" \
-            --title "Respirazione per Android 1.0" \
-            --notes "Versione APK installabile. Basata sulla versione web del 31 ottobre 2026, con timer, impostazioni e musica disponibili offline. Pacchetto di test firmato per installazione diretta." \
+            --title "Respirazione per Android 1.1" \
+            --notes "Correzione dimensioni e scorrimento orizzontale su smartphone. Basata sulla versione web del 31 ottobre 2026, con timer, impostazioni e musica disponibili offline. Pacchetto di test firmato per installazione diretta." \
             --latest=false
