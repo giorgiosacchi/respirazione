@@ -23,8 +23,9 @@ jobs:
           gradle-version: '8.9'
       - name: Installa SDK Android 35
         run: |
-          sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
-          echo "ANDROID_HOME=$ANDROID_HOME"
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-35' 'build-tools;35.0.0'
       - name: Incorpora i file web e la musica
         run: |
           mkdir -p android/app/src/main/assets/music android/app/src/main/res/drawable
