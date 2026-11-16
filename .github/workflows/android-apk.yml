@@ -21,10 +21,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Prepara Android SDK
-        uses: android-actions/setup-android@v3
       - name: Installa SDK Android 35
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+        run: |
+          sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
+          echo "ANDROID_HOME=$ANDROID_HOME"
       - name: Incorpora i file web e la musica
         run: |
           mkdir -p android/app/src/main/assets/music android/app/src/main/res/drawable
