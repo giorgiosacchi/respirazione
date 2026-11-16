@@ -45,19 +45,19 @@ jobs:
       - name: Compila APK installabile
         run: gradle -p android :app:assembleDebug --no-daemon --stacktrace
       - name: Prepara file APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk Respirazione-Android-v1.1.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Respirazione-Android-v1.2.apk
       - name: Conserva APK come artefatto
         uses: actions/upload-artifact@v4
         with:
-          name: Respirazione-Android-v1.1-APK
-          path: Respirazione-Android-v1.1.apk
+          name: Respirazione-Android-v1.2-APK
+          path: Respirazione-Android-v1.2.apk
           if-no-files-found: error
       - name: Pubblica APK per il download diretto
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create android-v1.1.0-20261116 Respirazione-Android-v1.1.apk \
+          gh release create android-v1.2.0-20261116 Respirazione-Android-v1.2.apk \
             --target "$GITHUB_SHA" \
-            --title "Respirazione per Android 1.1" \
+            --title "Respirazione per Android 1.2" \
             --notes "Correzione dimensioni e scorrimento orizzontale su smartphone. Basata sulla versione web del 31 ottobre 2026, con timer, impostazioni e musica disponibili offline. Pacchetto di test firmato per installazione diretta." \
             --latest=false
