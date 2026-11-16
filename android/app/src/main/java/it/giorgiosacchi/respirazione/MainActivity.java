@@ -55,6 +55,13 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        // Rispetta la viewport mobile (come Chrome/PWA), senza zoom di sistema.
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setTextZoom(100);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
         // Rispetta il viewport CSS della PWA invece del viewport WebView predefinito.
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(false);
